@@ -77,6 +77,7 @@
     background:linear-gradient(135deg,var(--teal),var(--ice-deep));box-shadow:0 8px 22px rgba(14,126,151,.35);cursor:pointer;
     letter-spacing:.2px;transition:transform .06s ease, opacity .15s}
   .save:active{transform:scale(.985)}
+  .save.confirm{background:linear-gradient(135deg,#0E7E97,var(--navy))}
   .save[disabled]{opacity:.6}
 
   details.hist{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
@@ -260,6 +261,7 @@
     $("#pUlozeno").textContent=fmtEUR(ulozeno);
     $("#pProfit").textContent=fmtEUR(profit);
     $("#pPune").textContent=fmtDelta(puneDelta);
+    if(armed) disarm();   // promjena brojki poništava potvrdu
   }
 
   $$(".counter").forEach(function(c){
@@ -320,21 +322,48 @@
 
   function resetCounters(){ KEYS.forEach(function(k){fields[k].value=0;}); refresh(); }
 
-  $("#save").addEventListener("click",function(){
-    var v=vals(), sum=0; KEYS.forEach(function(k){sum+=v[k];});
-    if(sum===0){ toast("Sve je 0 — nema šta da se sačuva",true); return; }
+  var saving=false, armed=false, armTimer=null;
+  var lastSig="", lastSavedAt=0;
+  var saveBtn=$("#save");
+
+  function sig(p){ return [p.datum,p.napravljene,p.napunjeno18,p.napunjeno36,p.prodato18,p.prodato36].join("|"); }
+  function disarm(){ armed=false; saveBtn.classList.remove("confirm"); saveBtn.textContent="Sačuvaj dan"; if(armTimer){clearTimeout(armTimer);armTimer=null;} }
+  function arm(label){ armed=true; saveBtn.classList.add("confirm"); saveBtn.textContent=label; if(armTimer)clearTimeout(armTimer); armTimer=setTimeout(disarm,3500); }
+
+  function doSave(){
     var p=payload();
     var entry=Object.assign({ts:Date.now(),synced:false},p);
     var log=getLog(); log.push(entry); setLog(log); renderHist();
-    var btn=this; btn.disabled=true; btn.textContent="Šaljem…";
+    lastSig=sig(p); lastSavedAt=Date.now();
+    saving=true; saveBtn.disabled=true; saveBtn.classList.remove("confirm"); saveBtn.textContent="Šaljem…";
     send(p).then(function(){
       entry.synced=true; setLog(getLog().map(function(e){return e.ts===entry.ts?entry:e;}));
       renderHist(); toast("Upisano ✓"); resetCounters();
     }).catch(function(err){
       if(err&&err.error==="no_endpoint"){ toast("Sačuvano lokalno. Poveži tabelu u ⚙︎",true); openModal(); }
       else { toast("Sačuvano lokalno (nije potvrđeno). ↻ kasnije",true); }
-    }).finally(function(){ btn.disabled=false; btn.textContent="Sačuvaj dan"; });
+    }).finally(function(){ saving=false; saveBtn.disabled=false; saveBtn.textContent="Sačuvaj dan"; });
+  }
+
+  saveBtn.addEventListener("click",function(){
+    if(saving) return;                                   // već šalje — ignoriši
+    var v=vals(), sum=0; KEYS.forEach(function(k){sum+=v[k];});
+    if(sum===0){ toast("Sve je 0 — nema šta da se sačuva",true); disarm(); return; }
+
+    if(!armed){                                          // prvi tap = potvrda
+      var s=sig(payload());
+      if(s===lastSig && (Date.now()-lastSavedAt)<60000){
+        arm("⚠ Isti unos — tapni opet"); 
+      } else {
+        arm("Tapni opet da potvrdiš ✓");
+      }
+      return;
+    }
+    disarm();                                            // drugi tap = upis
+    doSave();
   });
+
+
 
   $("#resync").addEventListener("click",function(){
     var pending=getLog().filter(function(e){return !e.synced;});
