@@ -110,6 +110,7 @@ header{
 .cell{width:14px; height:18px; border-radius:4px 4px 3px 3px;}
 .cell.b18{background:linear-gradient(180deg,#7FE0FF,#2FA8D8); box-shadow:0 0 6px rgba(91,214,255,.35);}
 .cell.b36{background:linear-gradient(180deg,#FFE08A,#D9A93C); box-shadow:0 0 6px rgba(244,201,93,.4);}
+.cell.bOst{background:linear-gradient(180deg,#8FE8C0,#2EAF7D); box-shadow:0 0 6px rgba(63,223,160,.35);}
 .cell.b0{background:transparent; border:1px solid var(--line);}
 .cell.more{width:auto; padding:0 6px; font-size:.62rem; color:var(--dim); border:1px dashed var(--line);
   display:flex; align-items:center;}
@@ -186,9 +187,40 @@ td.pos{color:var(--mint);} td.neg{color:var(--red);}
 .toast.show{opacity:1;}
 .toast.err{border-color:var(--red); color:var(--red);}
 footer{margin-top:34px; text-align:center; font-size:.68rem; color:var(--dim); letter-spacing:.08em;}
+
+/* ================= PIN KAPIJA ================= */
+.gate{position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px;}
+.gate.hidden{display:none;}
+.gate-box{width:100%; max-width:340px; text-align:center;}
+.gate-box .glogo{font-size:2.6rem; margin-bottom:10px;}
+.gate-box h1{font-family:'Barlow Condensed'; font-weight:700; font-size:1.5rem; letter-spacing:.18em; margin-bottom:4px;}
+.gate-box h1 b{color:var(--ice);}
+.gate-box p{font-size:.8rem; color:var(--muted); margin-bottom:18px;}
+.gate-box input{width:100%; background:var(--panel); border:1px solid var(--line); border-radius:13px; color:var(--text);
+  padding:15px; font-size:1.5rem; text-align:center; letter-spacing:.5em; font-family:'Barlow Condensed'; font-weight:600;}
+.gate-box input:focus{outline:none; border-color:var(--ice);}
+.gate-box button{width:100%; margin-top:12px; padding:14px; border-radius:13px; border:none; cursor:pointer;
+  background:var(--ice); color:#06243A; font-family:'Inter'; font-weight:600; font-size:1rem;}
+.gate-box button:disabled{opacity:.6;}
+.gate-err{margin-top:12px; font-size:.78rem; color:var(--red); min-height:1.2em;}
+
 </style>
 </head>
 <body>
+
+<!-- ================= PIN KAPIJA ================= -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="glogo">🧊</div>
+    <h1>ICE<b>BERG</b></h1>
+    <p>Unesi PIN za pristup</p>
+    <input type="text" autocomplete="off" maxlength="20" id="gateIme" placeholder="Ime" style="margin-bottom:10px; letter-spacing:.1em; font-size:1.1rem;">
+    <input type="password" inputmode="numeric" autocomplete="off" maxlength="12" id="gatePin" placeholder="PIN">
+    <button id="gateBtn">Otključaj</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
 
 <header>
   <div class="wrap hbar">
@@ -230,6 +262,7 @@ footer{margin-top:34px; text-align:center; font-size:.68rem; color:var(--dim); l
       <div class="lrow">
         <div class="lcell"><div class="lbl">Pune @18€</div><div class="val" style="color:var(--ice)" id="l18">0</div></div>
         <div class="lcell"><div class="lbl">Pune @36€</div><div class="val" style="color:var(--gold)" id="l36">0</div></div>
+        <div class="lcell"><div class="lbl">Pune ostale</div><div class="val" style="color:var(--mint)" id="lOst">0</div></div>
         <div class="lcell"><div class="lbl">Pune ukupno</div><div class="val" id="lPune">0</div></div>
         <div class="lcell"><div class="lbl">Prazne</div><div class="val" style="color:var(--muted)" id="lPrazne">0</div></div>
         <div class="lcell"><div class="lbl">Ukupno kesa</div><div class="val" id="lUkupno">0</div></div>
@@ -240,6 +273,7 @@ footer{margin-top:34px; text-align:center; font-size:.68rem; color:var(--dim); l
         <div class="legend">
           <span><i style="background:linear-gradient(180deg,#FFE08A,#D9A93C)"></i> Premium @36</span>
           <span><i style="background:linear-gradient(180deg,#7FE0FF,#2FA8D8)"></i> Obična @18</span>
+          <span><i style="background:linear-gradient(180deg,#8FE8C0,#2EAF7D)"></i> Ostale</span>
           <span><i style="border:1px solid var(--line)"></i> Prazna</span>
         </div>
       </div>
@@ -321,6 +355,7 @@ footer{margin-top:34px; text-align:center; font-size:.68rem; color:var(--dim); l
       <button class="btn" id="btnCancel">Otkaži</button>
       <button class="btn primary" id="btnSave">Sačuvaj</button>
     </div>
+    <button class="btn" id="btnLock" style="width:100%; margin-top:10px; color:var(--red); border-color:var(--red)">🔒 Zaključaj (traži PIN ponovo)</button>
   </div>
 </div>
 
@@ -330,7 +365,7 @@ footer{margin-top:34px; text-align:center; font-size:.68rem; color:var(--dim); l
 "use strict";
 /* ============ podešavanja ============ */
 var LSKEY = "iceberg_dash_v1", CACHEKEY = "iceberg_dash_cache_v1";
-var DEF = { url:"", prazne:0, p18:0, p36:0, cost:20, pr18:18, pr36:36 };
+var DEF = { url:"", prazne:0, p18:0, p36:0, pOstale:0, cost:20, pr18:18, pr36:36 };
 function loadCfg(){ try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSKEY)||"{}")); }catch(e){ return Object.assign({},DEF); } }
 function saveCfg(c){ localStorage.setItem(LSKEY, JSON.stringify(c)); }
 var cfg = loadCfg();
@@ -364,28 +399,30 @@ function fetchData(){
 
 /* ============ obračun ============ */
 function totals(rs){
-  var t = {nap:0, n18:0, n36:0, p18:0, p36:0};
+  var t = {nap:0, n18:0, n36:0, p18:0, p36:0, nOst:0, pOst:0, izn:0};
   rs.forEach(function(r){
     t.nap += r.napravljene||0; t.n18 += r.napunjeno18||0; t.n36 += r.napunjeno36||0;
     t.p18 += r.prodato18||0;   t.p36 += r.prodato36||0;
+    t.nOst += r.napunjenoOst||0; t.pOst += r.prodatoOst||0; t.izn += r.iznosOst||0;
   });
   return t;
 }
 function money(t){
   var sell18 = cfg.cost + cfg.pr18, sell36 = cfg.cost + cfg.pr36;
   return {
-    profit:  t.p18*cfg.pr18 + t.p36*cfg.pr36,
-    ulozeno: (t.n18 + t.n36) * cfg.cost,
-    prihod:  t.p18*sell18 + t.p36*sell36
+    profit:  t.p18*cfg.pr18 + t.p36*cfg.pr36 + (t.izn - t.pOst*cfg.cost),
+    ulozeno: (t.n18 + t.n36 + t.nOst) * cfg.cost,
+    prihod:  t.p18*sell18 + t.p36*sell36 + t.izn
   };
 }
 function byDay(rs){
   var m = {};
   rs.forEach(function(r){
     var k = r.datum;
-    if(!m[k]) m[k] = {nap:0,n18:0,n36:0,p18:0,p36:0};
+    if(!m[k]) m[k] = {nap:0,n18:0,n36:0,p18:0,p36:0,nOst:0,pOst:0,izn:0};
     m[k].nap+=r.napravljene||0; m[k].n18+=r.napunjeno18||0; m[k].n36+=r.napunjeno36||0;
     m[k].p18+=r.prodato18||0;   m[k].p36+=r.prodato36||0;
+    m[k].nOst+=r.napunjenoOst||0; m[k].pOst+=r.prodatoOst||0; m[k].izn+=r.iznosOst||0;
   });
   return m;
 }
@@ -410,9 +447,10 @@ function render(){
   // lager
   var l18 = cfg.p18 + t.n18 - t.p18;
   var l36 = cfg.p36 + t.n36 - t.p36;
-  var prazne = cfg.prazne + t.nap - (t.n18 + t.n36) + (t.p18 + t.p36);
-  var pune = l18 + l36, ukupno = pune + prazne;
-  var potencijal = l18*sell18 + l36*sell36;
+  var lOst = (cfg.pOstale||0) + t.nOst - t.pOst;
+  var prazne = cfg.prazne + t.nap - (t.n18 + t.n36 + t.nOst) + (t.p18 + t.p36 + t.pOst);
+  var pune = l18 + l36 + lOst, ukupno = pune + prazne;
+  var potencijal = l18*sell18 + l36*sell36 + lOst*cfg.cost;
 
   // hero
   var h = $("hNeto");
@@ -422,17 +460,17 @@ function render(){
 
   // KPI
   $("kProfit").textContent = eur(m.profit);
-  $("kProfitN").textContent = "na " + (t.p18+t.p36) + " prodatih kesa";
+  $("kProfitN").textContent = "na " + (t.p18+t.p36+t.pOst) + " prodatih kesa";
   $("kPrihod").textContent = eur(m.prihod);
   $("kPrihodN").textContent = t.p18 + " × " + sell18 + "€ · " + t.p36 + " × " + sell36 + "€";
   $("kUlozeno").textContent = eur(m.ulozeno);
   $("kUlozenoN").textContent = (t.n18+t.n36) + " punjenja × " + cfg.cost + "€";
-  var fillTot = t.n18 + t.n36;
+  var fillTot = t.n18 + t.n36 + t.nOst;
   $("kPremium").textContent = fillTot ? (100*t.n36/fillTot).toFixed(1) + "%" : "—";
   $("kPremiumN").textContent = t.n36 + " premium od " + fillTot + " punjenja";
 
   // lager brojevi
-  $("l18").textContent = l18; $("l36").textContent = l36;
+  $("l18").textContent = l18; $("l36").textContent = l36; $("lOst").textContent = lOst;
   $("lPune").textContent = pune; $("lPrazne").textContent = prazne;
   $("lUkupno").textContent = ukupno;
 
@@ -446,6 +484,7 @@ function render(){
   }
   addCells(Math.max(0,l36), "b36");
   addCells(Math.max(0,l18), "b18");
+  addCells(Math.max(0,lOst), "bOst");
   addCells(Math.max(0,prazne), "b0");
   var rest = ukupno - shown;
   if(rest > 0){
@@ -481,8 +520,8 @@ function drawChart(){
     var v = dayMap[k];
     var dayNeto = 0, dayProfit = 0;
     if(v){
-      dayNeto = (v.p18*(cfg.cost+cfg.pr18) + v.p36*(cfg.cost+cfg.pr36)) - (v.n18+v.n36)*cfg.cost;
-      dayProfit = v.p18*cfg.pr18 + v.p36*cfg.pr36;
+      dayNeto = (v.p18*(cfg.cost+cfg.pr18) + v.p36*(cfg.cost+cfg.pr36) + v.izn) - (v.n18+v.n36+v.nOst)*cfg.cost;
+      dayProfit = v.p18*cfg.pr18 + v.p36*cfg.pr36 + (v.izn - v.pOst*cfg.cost);
     }
     cum += dayProfit;
     if(d >= firstD) days.push({k:k, neto:dayNeto, cum:cum});
@@ -553,35 +592,36 @@ function renderMonths(){
   var sorted = rows.slice().sort(function(a,b){ return a.datum < b.datum ? -1 : 1; });
   sorted.forEach(function(r){
     var k = r.datum.slice(0,7);
-    if(!m[k]) m[k] = {n18:0,n36:0,p18:0,p36:0};
+    if(!m[k]) m[k] = {n18:0,n36:0,p18:0,p36:0,nOst:0,pOst:0,izn:0};
     m[k].n18+=r.napunjeno18||0; m[k].n36+=r.napunjeno36||0;
     m[k].p18+=r.prodato18||0;   m[k].p36+=r.prodato36||0;
+    m[k].nOst+=r.napunjenoOst||0; m[k].pOst+=r.prodatoOst||0; m[k].izn+=r.iznosOst||0;
   });
   var keys = Object.keys(m).sort();
   var body = $("mBody"); body.innerHTML = "";
-  var run18 = cfg.p18, run36 = cfg.p36;
+  var run18 = cfg.p18, run36 = cfg.p36, runOst = cfg.pOstale||0;
   var T = {nap:0, prod:0, ul:0, pr:0, neto:0, prof:0};
 
   keys.forEach(function(k){
     var v = m[k];
-    var nap = v.n18+v.n36, prod = v.p18+v.p36;
+    var nap = v.n18+v.n36+v.nOst, prod = v.p18+v.p36+v.pOst;
     var ul = nap*cfg.cost;
-    var pr = v.p18*sell18 + v.p36*sell36;
+    var pr = v.p18*sell18 + v.p36*sell36 + v.izn;
     var neto = pr - ul;
-    var prof = v.p18*cfg.pr18 + v.p36*cfg.pr36;
-    run18 += v.n18 - v.p18; run36 += v.n36 - v.p36;
+    var prof = v.p18*cfg.pr18 + v.p36*cfg.pr36 + (v.izn - v.pOst*cfg.cost);
+    run18 += v.n18 - v.p18; run36 += v.n36 - v.p36; runOst += v.nOst - v.pOst;
     T.nap+=nap; T.prod+=prod; T.ul+=ul; T.pr+=pr; T.neto+=neto; T.prof+=prof;
 
     var tr = document.createElement("tr");
     var name = MJESECI[Number(k.slice(5,7))-1] + " " + k.slice(0,4);
     tr.innerHTML = "<td>"+name+"</td><td>"+nap+"</td><td>"+prod+"</td><td>"+eur(ul)+"</td><td>"+eur(pr)+"</td>"+
-      "<td class='"+signCls(neto)+"'>"+(neto>0?"+":"")+eur(neto)+"</td><td>"+eur(prof)+"</td><td>"+(run18+run36)+"</td>";
+      "<td class='"+signCls(neto)+"'>"+(neto>0?"+":"")+eur(neto)+"</td><td>"+eur(prof)+"</td><td>"+(run18+run36+runOst)+"</td>";
     body.appendChild(tr);
   });
 
   var tr = document.createElement("tr"); tr.className = "total";
   tr.innerHTML = "<td>UKUPNO</td><td>"+T.nap+"</td><td>"+T.prod+"</td><td>"+eur(T.ul)+"</td><td>"+eur(T.pr)+"</td>"+
-    "<td class='"+signCls(T.neto)+"'>"+(T.neto>0?"+":"")+eur(T.neto)+"</td><td>"+eur(T.prof)+"</td><td>"+(run18+run36)+"</td>";
+    "<td class='"+signCls(T.neto)+"'>"+(T.neto>0?"+":"")+eur(T.neto)+"</td><td>"+eur(T.prof)+"</td><td>"+(run18+run36+runOst)+"</td>";
   body.appendChild(tr);
 }
 
@@ -645,8 +685,57 @@ document.querySelectorAll(".tbtn").forEach(function(b){
   });
 });
 
+
+/* ============ PIN kapija (adresa je šifrovana AES-256-GCM) ============ */
+var ENC_LIST = ["MrHEcy0Z8YFFwswznHCouZCz1hoIQWcl/1h8iHy4TNX9aB36KS7rciVSNkgBZb1awbOJtYPCbqwDRVYgv565xlMwhC5CirZMaWjzDLm248OQF6dT5T/K8fg+yepUC9VarxVPJl1lLzlNuXvmBFkQBWkoccHP/LvSTVKLx5Esq9/NC8KCrDpp4Z/yrYD1Zj7HgvtiQSxkTp4YCvmW4YCb1A==","270/0T9xu7KiXrGX/PNuQhVkByc3xm5/Bwi5VukBuduaj+MZP2PMOBGuK12iMq0tZYzUccuOYgudjB2sK8lqDr1bEFDl0gFhun7NEukoebNEJK6tthJ/8EoVQ7c5HUr4MB/ghNVL78hLtCxXah41zbzgq9qAO++xoihN/86QFDH9lwzj1+BKQnef5CoWHqGWLsZmT4v29yhO030PUVUrVA=="];
+function b64b(s){ var bin=atob(s), a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i); return a; }
+function tryBlob(blob, keyStr){
+  var data=b64b(blob), salt=data.slice(0,16), iv=data.slice(16,28), body=data.slice(28);
+  return crypto.subtle.importKey("raw", new TextEncoder().encode(keyStr), "PBKDF2", false, ["deriveKey"])
+    .then(function(km){ return crypto.subtle.deriveKey({name:"PBKDF2", salt:salt, iterations:200000, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["decrypt"]); })
+    .then(function(key){ return crypto.subtle.decrypt({name:"AES-GCM", iv:iv}, key, body); })
+    .then(function(buf){ return new TextDecoder().decode(buf); });
+}
+function unlockWith(ime, pin){
+  var keyStr = ime.trim().toLowerCase() + ":" + pin.trim();
+  var chain = Promise.reject();
+  ENC_LIST.forEach(function(blob){
+    chain = chain.catch(function(){ return tryBlob(blob, keyStr); });
+  });
+  return chain.then(function(payload){
+    var parts = payload.split("\n");
+    return { url: parts[0], ime: parts[1] || ime };
+  });
+}
+function showGate(){ $("gate").classList.remove("hidden"); setTimeout(function(){ $("gatePin").focus(); }, 50); }
+function hideGate(){ $("gate").classList.add("hidden"); }
+function tryUnlock(){
+  var ime=$("gateIme").value.trim(), pin=$("gatePin").value.trim();
+  if(!ime || !pin){ $("gateErr").textContent="Upiši i ime i PIN"; return; }
+  var btn=$("gateBtn"); btn.disabled=true; btn.textContent="Provjeravam…"; $("gateErr").textContent="";
+  unlockWith(ime, pin).then(function(res){
+    cfg.url=res.url; saveCfg(cfg);
+    hideGate(); refresh(true);
+  }).catch(function(){
+    $("gateErr").textContent="Pogrešno ime ili PIN — probaj opet";
+    $("gatePin").value=""; $("gatePin").focus();
+  }).finally(function(){ btn.disabled=false; btn.textContent="Otključaj"; });
+}
+$("gateBtn").addEventListener("click", tryUnlock);
+$("gatePin").addEventListener("keydown", function(e){ if(e.key==="Enter") tryUnlock(); });
+$("gateIme").addEventListener("keydown", function(e){ if(e.key==="Enter") $("gatePin").focus(); });
+if(cfg.url){ hideGate(); } else { showGate(); }
+$("btnLock").addEventListener("click", function(){
+  cfg.url=""; saveCfg(cfg);
+  try{ localStorage.removeItem(CACHEKEY); }catch(e){}
+  closeModal(); rows=[];
+  $("app").style.display="none"; $("empty").style.display="none";
+  showGate(); toast("Zaključano — traži se PIN");
+});
+
+
 /* start */
-refresh(true);
+if(cfg.url) refresh(true);
 </script>
 </body>
 </html>
