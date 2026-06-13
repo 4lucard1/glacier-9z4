@@ -110,7 +110,6 @@ header{
 .cell{width:14px; height:18px; border-radius:4px 4px 3px 3px;}
 .cell.b18{background:linear-gradient(180deg,#7FE0FF,#2FA8D8); box-shadow:0 0 6px rgba(91,214,255,.35);}
 .cell.b36{background:linear-gradient(180deg,#FFE08A,#D9A93C); box-shadow:0 0 6px rgba(244,201,93,.4);}
-.cell.bOst{background:linear-gradient(180deg,#8FE8C0,#2EAF7D); box-shadow:0 0 6px rgba(63,223,160,.35);}
 .cell.b0{background:transparent; border:1px solid var(--line);}
 .cell.more{width:auto; padding:0 6px; font-size:.62rem; color:var(--dim); border:1px dashed var(--line);
   display:flex; align-items:center;}
@@ -262,7 +261,6 @@ footer{margin-top:34px; text-align:center; font-size:.68rem; color:var(--dim); l
       <div class="lrow">
         <div class="lcell"><div class="lbl">Pune @18€</div><div class="val" style="color:var(--ice)" id="l18">0</div></div>
         <div class="lcell"><div class="lbl">Pune @36€</div><div class="val" style="color:var(--gold)" id="l36">0</div></div>
-        <div class="lcell"><div class="lbl">Pune ostale</div><div class="val" style="color:var(--mint)" id="lOst">0</div></div>
         <div class="lcell"><div class="lbl">Pune ukupno</div><div class="val" id="lPune">0</div></div>
         <div class="lcell"><div class="lbl">Prazne</div><div class="val" style="color:var(--muted)" id="lPrazne">0</div></div>
         <div class="lcell"><div class="lbl">Ukupno kesa</div><div class="val" id="lUkupno">0</div></div>
@@ -273,7 +271,6 @@ footer{margin-top:34px; text-align:center; font-size:.68rem; color:var(--dim); l
         <div class="legend">
           <span><i style="background:linear-gradient(180deg,#FFE08A,#D9A93C)"></i> Premium @36</span>
           <span><i style="background:linear-gradient(180deg,#7FE0FF,#2FA8D8)"></i> Obična @18</span>
-          <span><i style="background:linear-gradient(180deg,#8FE8C0,#2EAF7D)"></i> Ostale</span>
           <span><i style="border:1px solid var(--line)"></i> Prazna</span>
         </div>
       </div>
@@ -365,7 +362,7 @@ footer{margin-top:34px; text-align:center; font-size:.68rem; color:var(--dim); l
 "use strict";
 /* ============ podešavanja ============ */
 var LSKEY = "iceberg_dash_v1", CACHEKEY = "iceberg_dash_cache_v1";
-var DEF = { url:"", prazne:0, p18:0, p36:0, pOstale:0, cost:20, pr18:18, pr36:36 };
+var DEF = { url:"", prazne:0, p18:0, p36:0, cost:20, pr18:18, pr36:36 };
 function loadCfg(){ try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSKEY)||"{}")); }catch(e){ return Object.assign({},DEF); } }
 function saveCfg(c){ localStorage.setItem(LSKEY, JSON.stringify(c)); }
 var cfg = loadCfg();
@@ -399,30 +396,30 @@ function fetchData(){
 
 /* ============ obračun ============ */
 function totals(rs){
-  var t = {nap:0, n18:0, n36:0, p18:0, p36:0, nOst:0, pOst:0, izn:0};
+  var t = {nap:0, n18:0, n36:0, p18:0, p36:0, ekstra:0};
   rs.forEach(function(r){
     t.nap += r.napravljene||0; t.n18 += r.napunjeno18||0; t.n36 += r.napunjeno36||0;
     t.p18 += r.prodato18||0;   t.p36 += r.prodato36||0;
-    t.nOst += r.napunjenoOst||0; t.pOst += r.prodatoOst||0; t.izn += r.iznosOst||0;
+    t.ekstra += r.ekstra||0;
   });
   return t;
 }
 function money(t){
   var sell18 = cfg.cost + cfg.pr18, sell36 = cfg.cost + cfg.pr36;
   return {
-    profit:  t.p18*cfg.pr18 + t.p36*cfg.pr36 + (t.izn - t.pOst*cfg.cost),
-    ulozeno: (t.n18 + t.n36 + t.nOst) * cfg.cost,
-    prihod:  t.p18*sell18 + t.p36*sell36 + t.izn
+    profit:  t.p18*cfg.pr18 + t.p36*cfg.pr36,
+    ulozeno: (t.n18 + t.n36) * cfg.cost,
+    prihod:  t.p18*sell18 + t.p36*sell36 + t.ekstra
   };
 }
 function byDay(rs){
   var m = {};
   rs.forEach(function(r){
     var k = r.datum;
-    if(!m[k]) m[k] = {nap:0,n18:0,n36:0,p18:0,p36:0,nOst:0,pOst:0,izn:0};
+    if(!m[k]) m[k] = {nap:0,n18:0,n36:0,p18:0,p36:0,ekstra:0};
     m[k].nap+=r.napravljene||0; m[k].n18+=r.napunjeno18||0; m[k].n36+=r.napunjeno36||0;
     m[k].p18+=r.prodato18||0;   m[k].p36+=r.prodato36||0;
-    m[k].nOst+=r.napunjenoOst||0; m[k].pOst+=r.prodatoOst||0; m[k].izn+=r.iznosOst||0;
+    m[k].ekstra+=r.ekstra||0;
   });
   return m;
 }
@@ -447,10 +444,9 @@ function render(){
   // lager
   var l18 = cfg.p18 + t.n18 - t.p18;
   var l36 = cfg.p36 + t.n36 - t.p36;
-  var lOst = (cfg.pOstale||0) + t.nOst - t.pOst;
-  var prazne = cfg.prazne + t.nap - (t.n18 + t.n36 + t.nOst) + (t.p18 + t.p36 + t.pOst);
-  var pune = l18 + l36 + lOst, ukupno = pune + prazne;
-  var potencijal = l18*sell18 + l36*sell36 + lOst*cfg.cost;
+  var prazne = cfg.prazne + t.nap - (t.n18 + t.n36) + (t.p18 + t.p36);
+  var pune = l18 + l36, ukupno = pune + prazne;
+  var potencijal = l18*sell18 + l36*sell36;
 
   // hero
   var h = $("hNeto");
@@ -460,17 +456,17 @@ function render(){
 
   // KPI
   $("kProfit").textContent = eur(m.profit);
-  $("kProfitN").textContent = "na " + (t.p18+t.p36+t.pOst) + " prodatih kesa";
+  $("kProfitN").textContent = "na " + (t.p18+t.p36) + " prodatih kesa";
   $("kPrihod").textContent = eur(m.prihod);
   $("kPrihodN").textContent = t.p18 + " × " + sell18 + "€ · " + t.p36 + " × " + sell36 + "€";
   $("kUlozeno").textContent = eur(m.ulozeno);
   $("kUlozenoN").textContent = (t.n18+t.n36) + " punjenja × " + cfg.cost + "€";
-  var fillTot = t.n18 + t.n36 + t.nOst;
+  var fillTot = t.n18 + t.n36;
   $("kPremium").textContent = fillTot ? (100*t.n36/fillTot).toFixed(1) + "%" : "—";
   $("kPremiumN").textContent = t.n36 + " premium od " + fillTot + " punjenja";
 
   // lager brojevi
-  $("l18").textContent = l18; $("l36").textContent = l36; $("lOst").textContent = lOst;
+  $("l18").textContent = l18; $("l36").textContent = l36;
   $("lPune").textContent = pune; $("lPrazne").textContent = prazne;
   $("lUkupno").textContent = ukupno;
 
@@ -484,7 +480,6 @@ function render(){
   }
   addCells(Math.max(0,l36), "b36");
   addCells(Math.max(0,l18), "b18");
-  addCells(Math.max(0,lOst), "bOst");
   addCells(Math.max(0,prazne), "b0");
   var rest = ukupno - shown;
   if(rest > 0){
@@ -520,8 +515,8 @@ function drawChart(){
     var v = dayMap[k];
     var dayNeto = 0, dayProfit = 0;
     if(v){
-      dayNeto = (v.p18*(cfg.cost+cfg.pr18) + v.p36*(cfg.cost+cfg.pr36) + v.izn) - (v.n18+v.n36+v.nOst)*cfg.cost;
-      dayProfit = v.p18*cfg.pr18 + v.p36*cfg.pr36 + (v.izn - v.pOst*cfg.cost);
+      dayNeto = (v.p18*(cfg.cost+cfg.pr18) + v.p36*(cfg.cost+cfg.pr36) + v.ekstra) - (v.n18+v.n36)*cfg.cost;
+      dayProfit = v.p18*cfg.pr18 + v.p36*cfg.pr36;
     }
     cum += dayProfit;
     if(d >= firstD) days.push({k:k, neto:dayNeto, cum:cum});
@@ -592,36 +587,36 @@ function renderMonths(){
   var sorted = rows.slice().sort(function(a,b){ return a.datum < b.datum ? -1 : 1; });
   sorted.forEach(function(r){
     var k = r.datum.slice(0,7);
-    if(!m[k]) m[k] = {n18:0,n36:0,p18:0,p36:0,nOst:0,pOst:0,izn:0};
+    if(!m[k]) m[k] = {n18:0,n36:0,p18:0,p36:0,ekstra:0};
     m[k].n18+=r.napunjeno18||0; m[k].n36+=r.napunjeno36||0;
     m[k].p18+=r.prodato18||0;   m[k].p36+=r.prodato36||0;
-    m[k].nOst+=r.napunjenoOst||0; m[k].pOst+=r.prodatoOst||0; m[k].izn+=r.iznosOst||0;
+    m[k].ekstra+=r.ekstra||0;
   });
   var keys = Object.keys(m).sort();
   var body = $("mBody"); body.innerHTML = "";
-  var run18 = cfg.p18, run36 = cfg.p36, runOst = cfg.pOstale||0;
+  var run18 = cfg.p18, run36 = cfg.p36;
   var T = {nap:0, prod:0, ul:0, pr:0, neto:0, prof:0};
 
   keys.forEach(function(k){
     var v = m[k];
-    var nap = v.n18+v.n36+v.nOst, prod = v.p18+v.p36+v.pOst;
+    var nap = v.n18+v.n36, prod = v.p18+v.p36;
     var ul = nap*cfg.cost;
-    var pr = v.p18*sell18 + v.p36*sell36 + v.izn;
+    var pr = v.p18*sell18 + v.p36*sell36 + v.ekstra;
     var neto = pr - ul;
-    var prof = v.p18*cfg.pr18 + v.p36*cfg.pr36 + (v.izn - v.pOst*cfg.cost);
-    run18 += v.n18 - v.p18; run36 += v.n36 - v.p36; runOst += v.nOst - v.pOst;
+    var prof = v.p18*cfg.pr18 + v.p36*cfg.pr36;
+    run18 += v.n18 - v.p18; run36 += v.n36 - v.p36;
     T.nap+=nap; T.prod+=prod; T.ul+=ul; T.pr+=pr; T.neto+=neto; T.prof+=prof;
 
     var tr = document.createElement("tr");
     var name = MJESECI[Number(k.slice(5,7))-1] + " " + k.slice(0,4);
     tr.innerHTML = "<td>"+name+"</td><td>"+nap+"</td><td>"+prod+"</td><td>"+eur(ul)+"</td><td>"+eur(pr)+"</td>"+
-      "<td class='"+signCls(neto)+"'>"+(neto>0?"+":"")+eur(neto)+"</td><td>"+eur(prof)+"</td><td>"+(run18+run36+runOst)+"</td>";
+      "<td class='"+signCls(neto)+"'>"+(neto>0?"+":"")+eur(neto)+"</td><td>"+eur(prof)+"</td><td>"+(run18+run36)+"</td>";
     body.appendChild(tr);
   });
 
   var tr = document.createElement("tr"); tr.className = "total";
   tr.innerHTML = "<td>UKUPNO</td><td>"+T.nap+"</td><td>"+T.prod+"</td><td>"+eur(T.ul)+"</td><td>"+eur(T.pr)+"</td>"+
-    "<td class='"+signCls(T.neto)+"'>"+(T.neto>0?"+":"")+eur(T.neto)+"</td><td>"+eur(T.prof)+"</td><td>"+(run18+run36+runOst)+"</td>";
+    "<td class='"+signCls(T.neto)+"'>"+(T.neto>0?"+":"")+eur(T.neto)+"</td><td>"+eur(T.prof)+"</td><td>"+(run18+run36)+"</td>";
   body.appendChild(tr);
 }
 

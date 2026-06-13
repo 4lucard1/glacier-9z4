@@ -117,7 +117,7 @@ header{
 .sub.ice .sval{color:var(--ice);} .sub.gold .sval{color:var(--gold);}
 .sub.mint .sval{color:var(--mint);} .sub.red .sval{color:var(--red);}
 .dotmark{width:8px; height:8px; border-radius:2px; display:inline-block;}
-.d18{background:linear-gradient(180deg,#7FE0FF,#2FA8D8);} .d36{background:linear-gradient(180deg,#FFE08A,#D9A93C);} .dOst{background:linear-gradient(180deg,#8FE8C0,#2EAF7D);}
+.d18{background:linear-gradient(180deg,#7FE0FF,#2FA8D8);} .d36{background:linear-gradient(180deg,#FFE08A,#D9A93C);}
 
 /* dvije male podkartice u redu */
 .sub-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
@@ -136,7 +136,6 @@ header{
 .cell{width:13px; height:17px; border-radius:3px;}
 .cell.b18{background:linear-gradient(180deg,#7FE0FF,#2FA8D8);}
 .cell.b36{background:linear-gradient(180deg,#FFE08A,#D9A93C);}
-.cell.bOst{background:linear-gradient(180deg,#8FE8C0,#2EAF7D);}
 .cell.b0{background:transparent; border:1px solid var(--line);}
 .cell.more{width:auto; padding:0 5px; font-size:.6rem; color:var(--dim); border:1px dashed var(--line); display:flex; align-items:center;}
 
@@ -274,6 +273,38 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
   .logo span{display:none;}
 }
 
+
+/* ===== Dugovanja i zadaci ===== */
+.kn-tabs{margin-left:auto; display:flex; gap:4px;}
+.kn-tab{border:1px solid var(--line); background:transparent; color:var(--muted); font-family:'Inter';
+  font-size:.7rem; padding:4px 10px; border-radius:8px; cursor:pointer;}
+.kn-tab.on{background:rgba(91,214,255,.12); border-color:var(--ice); color:var(--ice);}
+.kn-saldo{background:var(--panel2); border:1px solid var(--line); border-radius:11px; padding:11px 13px;
+  font-size:.82rem; color:var(--muted); line-height:1.6;}
+.kn-saldo b{font-family:'Barlow Condensed'; font-weight:600; font-size:1.15rem;}
+.kn-saldo .pos{color:var(--mint);} .kn-saldo .neg{color:var(--red);}
+.kn-feed{display:flex; flex-direction:column; gap:7px; max-height:300px; overflow-y:auto;}
+.kn-item{background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:9px 11px;
+  display:flex; align-items:flex-start; gap:9px; font-size:.84rem;}
+.kn-item .kn-main{flex:1; min-width:0;}
+.kn-item .kn-meta{font-size:.66rem; color:var(--dim); margin-top:2px;}
+.kn-item .kn-amt{font-family:'Barlow Condensed'; font-weight:600; font-size:1.05rem; white-space:nowrap;}
+.kn-item .kn-x{background:none; border:none; color:var(--dim); cursor:pointer; font-size:.78rem; padding:2px 4px;}
+.kn-item .kn-x.arm{color:var(--red);}
+.kn-add{width:100%; padding:10px; border-radius:10px; border:1px dashed var(--line); background:transparent;
+  color:var(--muted); font-family:'Inter'; font-size:.84rem; cursor:pointer;}
+.kn-add:hover{color:var(--ice); border-color:var(--ice);}
+.kn-write{display:flex; gap:7px; margin-bottom:8px;}
+.kn-write input{flex:1; background:var(--panel2); border:1px solid var(--line); border-radius:10px; color:var(--text);
+  padding:9px 11px; font-size:.85rem; font-family:'Inter';}
+.kn-write input:focus{outline:none; border-color:var(--ice);}
+.kn-write button{width:42px; border-radius:10px; border:none; background:var(--ice); color:var(--unesi-fg); font-size:1.1rem; cursor:pointer;}
+.kn-chk{width:20px; height:20px; border:1px solid var(--line); border-radius:6px; cursor:pointer; flex:none;
+  display:flex; align-items:center; justify-content:center; font-size:.8rem; color:var(--mint); background:var(--panel3);}
+.kn-chk.done{background:rgba(63,223,160,.15); border-color:var(--mint);}
+.kn-item.done .kn-main{text-decoration:line-through; color:var(--dim);}
+.dug-ko.on{background:var(--ice); border-color:var(--ice); color:var(--unesi-fg);}
+
 /* ================= PIN KAPIJA ================= */
 .gate{position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px;}
 .gate.hidden{display:none;}
@@ -346,10 +377,9 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
             <div class="sub mini ice"><div class="slbl">Punih ukupno</div><div class="sval" id="lPune">0</div></div>
             <div class="sub mini"><div class="slbl">Praznih</div><div class="sval" style="color:var(--muted)" id="lPrazne">0</div></div>
           </div>
-          <div class="sub-row tri">
+          <div class="sub-row">
             <div class="sub mini ice"><div class="slbl"><span class="dotmark d18"></span>Punih @18</div><div class="sval" id="l18">0</div></div>
             <div class="sub mini gold"><div class="slbl"><span class="dotmark d36"></span>Punih @36</div><div class="sval" id="l36">0</div></div>
-            <div class="sub mini mint"><div class="slbl"><span class="dotmark dOst"></span>Punih ostalih</div><div class="sval" id="lOst">0</div></div>
           </div>
           <div class="sub">
             <div class="slbl">Ukupno kesa <span id="lUkupnoTag" style="margin-left:auto; color:var(--dim)"></span></div>
@@ -375,6 +405,7 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
           <div class="sub">
             <div class="slbl">Neto keš · kasa − ulaganje</div>
             <div class="bigval" id="nNeto">0 €</div>
+            <div class="snote" id="nNetoNote">kasa − ulaganje</div>
           </div>
         </div>
       </div>
@@ -387,10 +418,9 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
             <div class="sub mini mint"><div class="slbl">Prodatih ukupno</div><div class="sval" id="pUkupno">0</div></div>
             <div class="sub mini"><div class="slbl">Prodatih danas</div><div class="sval" id="pDanas">0</div></div>
           </div>
-          <div class="sub-row tri">
+          <div class="sub-row">
             <div class="sub mini"><div class="slbl"><span class="dotmark d18"></span>Prodatih @18</div><div class="sval" id="p18">0</div></div>
             <div class="sub mini"><div class="slbl"><span class="dotmark d36"></span>Prodatih @36</div><div class="sval" id="p36">0</div></div>
-            <div class="sub mini"><div class="slbl"><span class="dotmark dOst"></span>Prodatih ostalih</div><div class="sval" id="pOst">0</div></div>
           </div>
           <div class="sub gold">
             <div class="slbl">Premium udio · @36 od punjenja</div>
@@ -400,9 +430,29 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
       </div>
 
       <!-- PRAZAN PROZOR (placeholder za buduće) -->
-      <div class="win ghost" id="sGhost">
-        <div class="win-head"><span class="pill">+</span><h3>Slobodno</h3></div>
-        <div class="win-body">Ovdje ide sljedeći prozor<br>kad smisliš šta ti treba.</div>
+      <div class="win" id="sKnjiga">
+        <div class="win-head"><span class="pill">+</span><h3>Dugovanja i zadaci</h3>
+          <span class="kn-tabs">
+            <button class="kn-tab on" id="ktDug">Dugovanja</button>
+            <button class="kn-tab" id="ktZad">Zadaci</button>
+          </span>
+        </div>
+        <div class="win-body" style="gap:8px">
+          <!-- DUGOVANJA -->
+          <div id="knDug">
+            <div class="kn-saldo" id="dugSaldo">—</div>
+            <div class="kn-feed" id="dugFeed"><div class="nempty">Nema unosa.</div></div>
+            <button class="kn-add" id="dugAdd">+ Dodaj dug</button>
+          </div>
+          <!-- ZADACI -->
+          <div id="knZad" style="display:none">
+            <div class="kn-write">
+              <input type="text" id="zadText" maxlength="200" placeholder="Novi zadatak…">
+              <button id="zadAdd">+</button>
+            </div>
+            <div class="kn-feed" id="zadFeed"><div class="nempty">Nema zadataka.</div></div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -420,8 +470,8 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
         <div class="tblwrap">
           <table>
             <thead><tr>
-              <th>Datum</th><th>Nove prazne</th><th>Nap. @18</th><th>Nap. @36</th><th>Nap. ost.</th>
-              <th>Prod. @18</th><th>Prod. @36</th><th>Prod. ost.</th><th>Napl. ost.</th><th>Neto</th><th></th>
+              <th>Datum</th><th>Nove prazne</th><th>Nap. @18</th><th>Nap. @36</th>
+              <th>Prod. @18</th><th>Prod. @36</th><th>Ekstra</th><th>Neto</th><th></th>
             </tr></thead>
             <tbody id="tBody"></tbody>
           </table>
@@ -480,10 +530,6 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
       <button class="cbtn" data-k="napunjeno36" data-d="-1">−</button>
       <input class="cval" type="number" min="0" id="v_napunjeno36" value="0">
       <button class="cbtn" data-k="napunjeno36" data-d="1">+</button></div>
-    <div class="cnt"><div class="clbl"><b>Napunjeno ostalo</b>varijabilna cijena</div>
-      <button class="cbtn" data-k="napunjenoOst" data-d="-1">−</button>
-      <input class="cval" type="number" min="0" id="v_napunjenoOst" value="0">
-      <button class="cbtn" data-k="napunjenoOst" data-d="1">+</button></div>
 
     <div class="csep">Prodaja · tu naplaćuješ</div>
     <div class="cnt"><div class="clbl"><b>Prodato @18€</b>obična</div>
@@ -494,12 +540,11 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
       <button class="cbtn" data-k="prodato36" data-d="-1">−</button>
       <input class="cval" type="number" min="0" id="v_prodato36" value="0">
       <button class="cbtn" data-k="prodato36" data-d="1">+</button></div>
-    <div class="cnt"><div class="clbl"><b>Prodato ostalo</b>varijabilna cijena</div>
-      <button class="cbtn" data-k="prodatoOst" data-d="-1">−</button>
-      <input class="cval" type="number" min="0" id="v_prodatoOst" value="0">
-      <button class="cbtn" data-k="prodatoOst" data-d="1">+</button></div>
-    <div class="cnt" id="rowIznosOst" style="display:none"><div class="clbl"><b>Naplaćeno za ostale</b>ukupno €</div>
-      <input class="cval" type="number" min="0" step="0.5" id="v_iznosOst" value="0" style="width:110px"></div>
+    <div class="csep">Ekstra u kasu · samo dodaje na neto</div>
+    <div class="cnt"><div class="clbl"><b>Ekstra unos (€)</b>dodatni novac u kasi</div>
+      <input class="cval" type="number" min="0" step="0.5" id="v_ekstra" value="0" style="width:90px"></div>
+    <div class="cnt" id="rowEkstraOpis" style="display:none"><div class="clbl"><b>Opis ekstra</b>npr. napojnica, zaokruženo</div>
+      <input class="cval" type="text" id="v_ekstraOpis" maxlength="80" style="width:150px; font-family:'Inter'; font-size:.85rem; letter-spacing:0"></div>
 
     <div class="danas">
       <div class="row"><span>Prihod (kasa)</span><b id="dPrihod">0 €</b></div>
@@ -519,7 +564,7 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
     <div class="mf"><label>/exec adresa (Apps Script)</label><input type="url" id="sUrl" placeholder="https://script.google.com/macros/s/.../exec">
       <div class="hint">Ista adresa kao na sajtu za unos. Čuva se samo na ovom uređaju.</div></div>
     <div class="mf"><label>Početne zalihe (prije prvog unosa)</label>
-      <div class="frow" style="grid-template-columns:1fr 1fr"><input type="number" id="sPrazne" min="0" placeholder="Prazne"><input type="number" id="sP18" min="0" placeholder="Pune @18"><input type="number" id="sP36" min="0" placeholder="Pune @36"><input type="number" id="sPOst" min="0" placeholder="Pune ostale"></div>
+      <div class="frow"><input type="number" id="sPrazne" min="0" placeholder="Prazne"><input type="number" id="sP18" min="0" placeholder="Pune @18"><input type="number" id="sP36" min="0" placeholder="Pune @36"></div>
       <div class="hint">Isto kao B8–B10 na Sheet Dashboardu. Od nule — ostavi prazno.</div></div>
     <div class="mf"><label>Cijene</label>
       <div class="frow"><input type="number" id="sCost" min="0" placeholder="Trošak (20)"><input type="number" id="sPr18" min="0" placeholder="Profit @18"><input type="number" id="sPr36" min="0" placeholder="Profit @36"></div></div>
@@ -528,18 +573,34 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
   </div>
 </div>
 
+<!-- ===== MODAL: dodaj dug ===== -->
+<div class="modal-bg" id="modalDug">
+  <div class="modal" style="max-width:420px">
+    <h2><span>💸</span> Dodaj dug <button class="x" id="closeDug">✕</button></h2>
+    <div class="mf"><label>Ko duguje / ko je dao</label>
+      <div class="frow" style="grid-template-columns:1fr 1fr">
+        <button class="btn dug-ko" data-ko="Ice" id="dugKoIce">Ice</button>
+        <button class="btn dug-ko" data-ko="Fox" id="dugKoFox">Fox</button>
+      </div>
+      <div class="hint">Označi na koga se dug odnosi.</div></div>
+    <div class="mf"><label>Iznos (€)</label><input type="number" id="dugIznos" min="0" step="0.5" placeholder="npr. 200"></div>
+    <div class="mf"><label>Opis (opciono)</label><input type="text" id="dugOpis" maxlength="120" placeholder="npr. ulog za materijal"></div>
+    <div class="mbtns"><button class="btn" id="cancelDug">Otkaži</button><button class="btn primary" id="saveDug">Sačuvaj</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
 var LSKEY = "iceberg_v2", CACHEKEY = "iceberg_v2_cache";
-var DEF = { url:"", ime:"", prazne:0, p18:0, p36:0, pOstale:0, cost:20, pr18:18, pr36:36, theme:"light" };
+var DEF = { url:"", ime:"", prazne:0, p18:0, p36:0, cost:20, pr18:18, pr36:36, theme:"light" };
 function loadCfg(){ try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSKEY)||"{}")); }catch(e){ return Object.assign({},DEF); } }
 function saveCfg(c){ localStorage.setItem(LSKEY, JSON.stringify(c)); }
 var cfg = loadCfg();
-var rows = [], notes = [], editingRed = null;
-var KEYS = ["napravljene","napunjeno18","napunjeno36","napunjenoOst","prodato18","prodato36","prodatoOst"];
-function iznosOstVal(id){ var v=Number(String($(id).value).replace(",",".")); return isNaN(v)?0:Math.round(v*100)/100; }
+var rows = [], notes = [], dugovanja = [], zadaci = [], editingRed = null;
+var KEYS = ["napravljene","napunjeno18","napunjeno36","prodato18","prodato36"];
+function eurVal(id){ var v=Number(String($(id).value).replace(",",".")); return isNaN(v)?0:Math.round(v*100)/100; }
 
 function $(id){ return document.getElementById(id); }
 function eur(n){ return n.toLocaleString("de-DE") + " €"; }
@@ -568,61 +629,57 @@ function call(params){
 
 /* ============ obračun ============ */
 function totals(rs){
-  var t = {nap:0,n18:0,n36:0,p18:0,p36:0,nOst:0,pOst:0,izn:0};
+  var t = {nap:0,n18:0,n36:0,p18:0,p36:0,ekstra:0};
   rs.forEach(function(r){
     t.nap+=r.napravljene||0; t.n18+=r.napunjeno18||0; t.n36+=r.napunjeno36||0;
     t.p18+=r.prodato18||0;   t.p36+=r.prodato36||0;
-    t.nOst+=r.napunjenoOst||0; t.pOst+=r.prodatoOst||0; t.izn+=r.iznosOst||0;
+    t.ekstra+=r.ekstra||0;
   });
   return t;
 }
 function rowNeto(r){
   var s18=cfg.cost+cfg.pr18, s36=cfg.cost+cfg.pr36;
-  return (r.prodato18*s18 + r.prodato36*s36 + (r.iznosOst||0))
-       - (r.napunjeno18 + r.napunjeno36 + (r.napunjenoOst||0))*cfg.cost;
+  return (r.prodato18*s18 + r.prodato36*s36 + (r.ekstra||0))
+       - (r.napunjeno18 + r.napunjeno36)*cfg.cost;
 }
 
 /* ============ render prozori ============ */
 function renderWindows(){
   var t = totals(rows);
   var s18=cfg.cost+cfg.pr18, s36=cfg.cost+cfg.pr36;
-  var profitOst = t.izn - t.pOst*cfg.cost;
-  var profit = t.p18*cfg.pr18 + t.p36*cfg.pr36 + profitOst;
-  var ulozeno = (t.n18+t.n36+t.nOst)*cfg.cost;
-  var prihod = t.p18*s18 + t.p36*s36 + t.izn;
-  var neto = prihod - ulozeno;
+  var profit = t.p18*cfg.pr18 + t.p36*cfg.pr36;
+  var ulozeno = (t.n18+t.n36)*cfg.cost;
+  var prihod = t.p18*s18 + t.p36*s36;
+  var neto = prihod - ulozeno + t.ekstra;
 
   var l18 = cfg.p18 + t.n18 - t.p18;
   var l36 = cfg.p36 + t.n36 - t.p36;
-  var lOst = cfg.pOstale + t.nOst - t.pOst;
-  var prazne = cfg.prazne + t.nap - (t.n18+t.n36+t.nOst) + (t.p18+t.p36+t.pOst);
-  var pune = l18 + l36 + lOst, ukupno = pune + prazne;
+  var prazne = cfg.prazne + t.nap - (t.n18+t.n36) + (t.p18+t.p36);
+  var pune = l18 + l36, ukupno = pune + prazne;
 
   // KESE
   $("lPune").textContent = pune; $("lPrazne").textContent = prazne;
-  $("l18").textContent = l18; $("l36").textContent = l36; $("lOst").textContent = lOst;
+  $("l18").textContent = l18; $("l36").textContent = l36;
   $("lUkupnoTag").textContent = ukupno + " kom";
   var cells = $("cells"); cells.innerHTML = "";
   var MAX=120, shown=0;
   function add(n,cls){ for(var i=0;i<n&&shown<MAX;i++,shown++){ var d=document.createElement("div"); d.className="cell "+cls; cells.appendChild(d);} }
-  add(Math.max(0,l36),"b36"); add(Math.max(0,l18),"b18"); add(Math.max(0,lOst),"bOst"); add(Math.max(0,prazne),"b0");
+  add(Math.max(0,l36),"b36"); add(Math.max(0,l18),"b18"); add(Math.max(0,prazne),"b0");
   var rest=ukupno-shown; if(rest>0){ var d=document.createElement("div"); d.className="cell more"; d.textContent="+"+rest; cells.appendChild(d); }
 
   // NOVAC
-  $("nLager").textContent = eur(l18*s18 + l36*s36 + lOst*cfg.cost);
-  $("nLagerNote").textContent = lOst>0
-    ? "ostale ("+lOst+") računate po trošku od "+cfg.cost+" € dok se ne prodaju"
-    : "koliko stiže kad se proda sve na stanju";
+  $("nLager").textContent = eur(l18*s18 + l36*s36);
   $("nProfit").textContent = eur(profit);
   $("nProfitNote").textContent = "na " + (t.p18+t.p36) + " prodatih kesa";
   var nn=$("nNeto"); nn.textContent=(neto>0?"+":"")+eur(neto); nn.className="bigval "+signCls(neto);
+  if($("nNetoNote")) $("nNetoNote").textContent = t.ekstra>0 ? ("uključuje +"+eur(t.ekstra)+" ekstra") : "kasa − ulaganje";
 
   // PROMET
-  $("pUkupno").textContent = t.p18+t.p36+t.pOst;
-  $("p18").textContent = t.p18; $("p36").textContent = t.p36; $("pOst").textContent = t.pOst;
-  var today=todayStr(), pd=0; rows.forEach(function(r){ if(r.datum===today) pd+=(r.prodato18||0)+(r.prodato36||0)+(r.prodatoOst||0); });
+  $("pUkupno").textContent = t.p18+t.p36;
+  $("p18").textContent = t.p18; $("p36").textContent = t.p36;
+  var today=todayStr(), pd=0; rows.forEach(function(r){ if(r.datum===today) pd+=(r.prodato18||0)+(r.prodato36||0); });
   $("pDanas").textContent = pd;
-  var fill=t.n18+t.n36+t.nOst; $("premium").textContent = fill ? (100*t.n36/fill).toFixed(1)+"%" : "—";
+  var fill=t.n18+t.n36; $("premium").textContent = fill ? (100*t.n36/fill).toFixed(1)+"%" : "—";
 }
 
 /* ============ tabela ============ */
@@ -652,11 +709,9 @@ function renderTable(){
         '<td><input class="tedit" type="number" min="0" value="'+r.napravljene+'" id="e_napravljene"></td>'+
         '<td><input class="tedit" type="number" min="0" value="'+r.napunjeno18+'" id="e_napunjeno18"></td>'+
         '<td><input class="tedit" type="number" min="0" value="'+r.napunjeno36+'" id="e_napunjeno36"></td>'+
-        '<td><input class="tedit" type="number" min="0" value="'+(r.napunjenoOst||0)+'" id="e_napunjenoOst"></td>'+
         '<td><input class="tedit" type="number" min="0" value="'+r.prodato18+'" id="e_prodato18"></td>'+
         '<td><input class="tedit" type="number" min="0" value="'+r.prodato36+'" id="e_prodato36"></td>'+
-        '<td><input class="tedit" type="number" min="0" value="'+(r.prodatoOst||0)+'" id="e_prodatoOst"></td>'+
-        '<td><input class="tedit" type="number" min="0" step="0.5" value="'+(r.iznosOst||0)+'" id="e_iznosOst"></td>'+
+        '<td><input class="tedit" type="number" min="0" step="0.5" value="'+(r.ekstra||0)+'" id="e_ekstra"></td>'+
         '<td>—</td>'+
         '<td><span class="tact"><button class="save" title="Sačuvaj">✓</button><button class="cancel" title="Otkaži">✕</button></span></td>';
       tr.querySelector(".save").addEventListener("click", function(){ saveEdit(r); });
@@ -665,9 +720,9 @@ function renderTable(){
       var neto=rowNeto(r);
       tr.innerHTML =
         '<td>'+fmtD(r.datum)+'</td>'+
-        '<td>'+r.napravljene+'</td><td>'+r.napunjeno18+'</td><td>'+r.napunjeno36+'</td><td>'+(r.napunjenoOst||0)+'</td>'+
-        '<td>'+r.prodato18+'</td><td>'+r.prodato36+'</td><td>'+(r.prodatoOst||0)+'</td>'+
-        '<td>'+((r.iznosOst||0) ? eur(r.iznosOst) : "—")+'</td>'+
+        '<td>'+r.napravljene+'</td><td>'+r.napunjeno18+'</td><td>'+r.napunjeno36+'</td>'+
+        '<td>'+r.prodato18+'</td><td>'+r.prodato36+'</td>'+
+        '<td'+((r.ekstra||0)?' class="pos"':'')+'>'+((r.ekstra||0)?("+"+eur(r.ekstra)):"—")+(r.ekstraOpis?'<br><span style="font-size:.7rem; color:var(--dim)">'+r.ekstraOpis+'</span>':'')+'</td>'+
         '<td class="'+signCls(neto)+'">'+(neto>0?"+":"")+eur(neto)+'</td>'+
         '<td><span class="tact"><button class="edit" title="Ispravi">✎</button><button class="del" title="Obriši">🗑</button></span></td>';
       tr.querySelector(".edit").addEventListener("click", function(){ editingRed=r.red; renderTable(); });
@@ -685,7 +740,7 @@ function fmtD(k){ return k.slice(8,10)+"."+k.slice(5,7)+"."+k.slice(0,4)+"."; }
 function saveEdit(r){
   var p={ action:"red_izmijeni", red:r.red, datum:$("e_datum").value||r.datum };
   KEYS.forEach(function(k){ p[k]=Math.max(0,Math.round(Number($("e_"+k).value)||0)); });
-  p.iznosOst = Math.max(0, iznosOstVal("e_iznosOst"));
+  p.ekstra = Math.max(0, eurVal("e_ekstra")); p.ekstraOpis = r.ekstraOpis||"";
   toast("Čuvam izmjenu…");
   call(p).then(function(res){ rows=res.redovi||[]; editingRed=null; afterData(); toast("Izmijenjeno ✓"); })
     .catch(function(){ toast("Izmjena nije uspjela", true); });
@@ -732,17 +787,106 @@ function sendNote(){
     .catch(function(){ toast("Bilješka nije poslata", true); }).finally(function(){ btn.disabled=false; });
 }
 
+/* ============ DUGOVANJA + ZADACI ============ */
+$("ktDug").addEventListener("click", function(){ $("ktDug").classList.add("on"); $("ktZad").classList.remove("on"); $("knDug").style.display=""; $("knZad").style.display="none"; });
+$("ktZad").addEventListener("click", function(){ $("ktZad").classList.add("on"); $("ktDug").classList.remove("on"); $("knZad").style.display=""; $("knDug").style.display="none"; });
+
+function renderDug(){
+  var feed=$("dugFeed"); feed.innerHTML="";
+  // saldo: zbir po osobi (ko je koliko dao/uložio)
+  var perKo={};
+  dugovanja.forEach(function(d){ var k=d.ko||"?"; perKo[k]=(perKo[k]||0)+(d.iznos||0); });
+  var keys=Object.keys(perKo);
+  if(!keys.length){ $("dugSaldo").innerHTML='<span style="color:var(--dim)">Još nema unosa o ulozima/dugovima.</span>'; }
+  else {
+    var html="Ukupno uloženo / dato:<br>";
+    keys.forEach(function(k){ html+= k+": <b>"+eur(perKo[k])+"</b>&nbsp;&nbsp;"; });
+    if(keys.length===2){ var d=perKo[keys[0]]-perKo[keys[1]];
+      if(d!==0) html+='<br><span class="'+(d>0?"pos":"neg")+'">Razlika: '+keys[(d>0?0:1)]+' je dao '+eur(Math.abs(d))+' više</span>';
+      else html+='<br><span>Izravnato ✓</span>'; }
+    $("dugSaldo").innerHTML=html;
+  }
+  if(!dugovanja.length){ feed.innerHTML='<div class="nempty">Nema unosa.</div>'; return; }
+  dugovanja.forEach(function(d){
+    var it=document.createElement("div"); it.className="kn-item";
+    var main=document.createElement("div"); main.className="kn-main";
+    main.innerHTML='<div><b>'+(d.ko||"?")+'</b>'+(d.opis?' — '+escapeHtml(d.opis):'')+'</div><div class="kn-meta">'+(d.autor||'')+' · '+(d.vrijeme||'')+'</div>';
+    var amt=document.createElement("div"); amt.className="kn-amt"; amt.textContent=eur(d.iznos||0);
+    var x=document.createElement("button"); x.className="kn-x"; x.textContent="✕";
+    x.addEventListener("click", function(){
+      if(!x.classList.contains("arm")){ x.classList.add("arm"); x.textContent="?"; setTimeout(function(){ x.classList.remove("arm"); x.textContent="✕"; },3000); return; }
+      x.disabled=true;
+      call({action:"dug_obrisi", id:d.id}).then(function(res){ dugovanja=res.dugovanja||[]; renderDug(); toast("Obrisano"); })
+        .catch(function(){ toast("Brisanje nije uspjelo", true); x.disabled=false; });
+    });
+    it.appendChild(main); it.appendChild(amt); it.appendChild(x); feed.appendChild(it);
+  });
+}
+function renderZad(){
+  var feed=$("zadFeed"); feed.innerHTML="";
+  if(!zadaci.length){ feed.innerHTML='<div class="nempty">Nema zadataka.</div>'; return; }
+  zadaci.forEach(function(z){
+    var it=document.createElement("div"); it.className="kn-item"+(z.gotovo?" done":"");
+    var chk=document.createElement("div"); chk.className="kn-chk"+(z.gotovo?" done":""); chk.textContent=z.gotovo?"✓":"";
+    chk.addEventListener("click", function(){
+      call({action:"zad_toggle", id:z.id}).then(function(res){ zadaci=res.zadaci||[]; renderZad(); })
+        .catch(function(){ toast("Greška", true); });
+    });
+    var main=document.createElement("div"); main.className="kn-main";
+    main.innerHTML='<div>'+escapeHtml(z.tekst||"")+'</div><div class="kn-meta">'+(z.autor||'')+' · '+(z.vrijeme||'')+'</div>';
+    var x=document.createElement("button"); x.className="kn-x"; x.textContent="✕";
+    x.addEventListener("click", function(){
+      if(!x.classList.contains("arm")){ x.classList.add("arm"); x.textContent="?"; setTimeout(function(){ x.classList.remove("arm"); x.textContent="✕"; },3000); return; }
+      x.disabled=true;
+      call({action:"zad_obrisi", id:z.id}).then(function(res){ zadaci=res.zadaci||[]; renderZad(); toast("Obrisano"); })
+        .catch(function(){ toast("Brisanje nije uspjelo", true); x.disabled=false; });
+    });
+    it.appendChild(chk); it.appendChild(main); it.appendChild(x); feed.appendChild(it);
+  });
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+// zadatak dodaj
+$("zadAdd").addEventListener("click", addZad);
+$("zadText").addEventListener("keydown", function(e){ if(e.key==="Enter") addZad(); });
+function addZad(){
+  var tekst=$("zadText").value.trim(); if(!tekst) return;
+  if(!cfg.ime){ toast("Otključaj imenom (Ice/Fox) prvo", true); return; }
+  call({action:"zad_dodaj", autor:cfg.ime, tekst:tekst}).then(function(res){ zadaci=res.zadaci||[]; $("zadText").value=""; renderZad(); })
+    .catch(function(){ toast("Nije dodato", true); });
+}
+
+// dug modal
+var dugKo="";
+function openDug(){ dugKo=""; $("dugIznos").value=""; $("dugOpis").value=""; $("dugKoIce").classList.remove("on"); $("dugKoFox").classList.remove("on"); $("modalDug").classList.add("open"); }
+function closeDug(){ $("modalDug").classList.remove("open"); }
+$("dugAdd").addEventListener("click", openDug);
+$("closeDug").addEventListener("click", closeDug);
+$("cancelDug").addEventListener("click", closeDug);
+$("modalDug").addEventListener("click", function(e){ if(e.target===this) closeDug(); });
+$("dugKoIce").addEventListener("click", function(){ dugKo="Ice"; this.classList.add("on"); $("dugKoFox").classList.remove("on"); });
+$("dugKoFox").addEventListener("click", function(){ dugKo="Fox"; this.classList.add("on"); $("dugKoIce").classList.remove("on"); });
+$("saveDug").addEventListener("click", function(){
+  var iznos=Math.max(0, eurVal("dugIznos"));
+  if(!dugKo){ toast("Označi Ice ili Fox", true); return; }
+  if(iznos<=0){ toast("Upiši iznos", true); return; }
+  var btn=$("saveDug"); btn.disabled=true;
+  call({action:"dug_dodaj", autor:cfg.ime||dugKo, ko:dugKo, iznos:iznos, opis:$("dugOpis").value.trim()})
+    .then(function(res){ dugovanja=res.dugovanja||[]; closeDug(); renderDug(); toast("Sačuvano ✓"); })
+    .catch(function(){ toast("Nije sačuvano", true); }).finally(function(){ btn.disabled=false; });
+});
+
 /* ============ UNOS modal ============ */
 function vals(){ var v={}; KEYS.forEach(function(k){ v[k]=Math.max(0,Math.round(Number($("v_"+k).value)||0)); }); return v; }
 function liveDanas(){
   var v=vals(), s18=cfg.cost+cfg.pr18, s36=cfg.cost+cfg.pr36;
-  var izn=Math.max(0, iznosOstVal("v_iznosOst"));
-  $("rowIznosOst").style.display = v.prodatoOst>0 ? "flex" : "none";
-  if(v.prodatoOst===0) $("v_iznosOst").value=0, izn=0;
-  var prihod=v.prodato18*s18+v.prodato36*s36+izn;
-  var ulozeno=(v.napunjeno18+v.napunjeno36+v.napunjenoOst)*cfg.cost;
-  var profit=v.prodato18*cfg.pr18+v.prodato36*cfg.pr36+(izn - v.prodatoOst*cfg.cost), neto=prihod-ulozeno;
-  $("dPrihod").textContent=eur(prihod); $("dUlozeno").textContent=eur(ulozeno);
+  var ekstra=Math.max(0, eurVal("v_ekstra"));
+  $("rowEkstraOpis").style.display = ekstra>0 ? "flex" : "none";
+  if(ekstra===0) $("v_ekstraOpis").value="";
+  var prihod=v.prodato18*s18+v.prodato36*s36;
+  var ulozeno=(v.napunjeno18+v.napunjeno36)*cfg.cost;
+  var profit=v.prodato18*cfg.pr18+v.prodato36*cfg.pr36, neto=prihod-ulozeno+ekstra;
+  $("dPrihod").textContent=eur(prihod+ekstra); $("dUlozeno").textContent=eur(ulozeno);
   $("dProfit").textContent=eur(profit);
   var n=$("dNeto"); n.textContent=(neto>0?"+":"")+eur(neto); n.className=signCls(neto);
 }
@@ -751,47 +895,47 @@ document.querySelectorAll(".cbtn").forEach(function(b){
     $("v_"+k).value=Math.max(0,(vals()[k]||0)+d); liveDanas(); disarm(); });
 });
 KEYS.forEach(function(k){ $("v_"+k).addEventListener("input", function(){ liveDanas(); disarm(); }); });
-$("v_iznosOst").addEventListener("input", function(){ liveDanas(); disarm(); });
+$("v_ekstra").addEventListener("input", function(){ liveDanas(); disarm(); });
+$("v_ekstraOpis").addEventListener("input", disarm);
 
 var saving=false, armed=false, lastSig="", lastSavedAt=0, armT=null;
-function payload(){ var p = Object.assign({datum:$("datum").value||todayStr()}, vals()); p.iznosOst = Math.max(0, iznosOstVal("v_iznosOst")); return p; }
+function payload(){ var p = Object.assign({datum:$("datum").value||todayStr()}, vals()); p.ekstra = Math.max(0, eurVal("v_ekstra")); p.ekstraOpis = $("v_ekstraOpis").value.trim(); return p; }
 function sig(p){ return JSON.stringify(p); }
 function arm(msg){ armed=true; var b=$("btnSaveDay"); b.classList.add("armed"); b.textContent=msg; clearTimeout(armT); armT=setTimeout(disarm,3500); }
 function disarm(){ armed=false; clearTimeout(armT); var b=$("btnSaveDay"); b.classList.remove("armed"); b.textContent="Sačuvaj dan"; }
 $("btnSaveDay").addEventListener("click", function(){
   if(saving) return;
   if(!cfg.url){ toast("Prvo postavi /exec adresu u ⚙", true); openCfg(); return; }
-  var v=vals(), sum=0; KEYS.forEach(function(k){ sum+=v[k]; });
+  var v=vals(), sum=0; KEYS.forEach(function(k){ sum+=v[k]; }); sum+=Math.max(0, eurVal("v_ekstra"));
   if(sum===0){ toast("Sve je 0 — nema šta da se sačuva", true); disarm(); return; }
-  if(v.prodatoOst>0 && iznosOstVal("v_iznosOst")<=0){ toast("Upiši koliko je naplaćeno za ostale kese", true); disarm(); return; }
   if(!armed){ var s=sig(payload());
     if(s===lastSig && (Date.now()-lastSavedAt)<60000) arm("⚠ Isti unos — klikni opet");
     else arm("Klikni opet da potvrdiš ✓"); return; }
   disarm(); saving=true; var b=$("btnSaveDay"); b.disabled=true; b.textContent="Čuvam…";
   var p=payload();
   call(p).then(function(){ lastSig=sig(p); lastSavedAt=Date.now();
-    KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_iznosOst").value=0; liveDanas();
+    KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_ekstra").value=0; $("v_ekstraOpis").value=""; liveDanas();
     toast("Sačuvano ✓"); closeUnos(); refresh(true);
   }).catch(function(){ toast("Nije sačuvano — provjeri vezu", true); })
     .finally(function(){ saving=false; b.disabled=false; b.textContent="Sačuvaj dan"; });
 });
 
 /* ============ osvježavanje ============ */
-function afterData(){ renderWindows(); buildMonthFilter(); renderTable(); renderNotes(); }
+function afterData(){ renderWindows(); buildMonthFilter(); renderTable(); renderNotes(); renderDug(); renderZad(); }
 function refresh(silent){
   var dot=$("dot"), stat=$("stat");
   if(!cfg.url){ $("app").style.display="none"; $("empty").style.display="block"; stat.textContent="nije povezano"; return; }
   $("app").style.display=""; $("empty").style.display="none";
   $("nav-refresh").classList.add("spin"); if(!silent) stat.textContent="učitavam…";
   call({action:"podaci"}).then(function(res){
-    rows=res.redovi||[]; notes=res.beleske||[];
-    try{ localStorage.setItem(CACHEKEY, JSON.stringify({rows:rows,notes:notes})); }catch(e){}
+    rows=res.redovi||[]; notes=res.beleske||[]; dugovanja=res.dugovanja||[]; zadaci=res.zadaci||[];
+    try{ localStorage.setItem(CACHEKEY, JSON.stringify({rows:rows,notes:notes,dugovanja:dugovanja,zadaci:zadaci})); }catch(e){}
     dot.className="dot on";
     var now=new Date(); stat.textContent="ažurirano "+String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
     afterData(); if(!silent) toast("Osvježeno ✓");
   }).catch(function(err){
     dot.className="dot err"; stat.textContent="greška veze";
-    try{ var c=JSON.parse(localStorage.getItem(CACHEKEY)||"null"); if(c){ rows=c.rows||[]; notes=c.notes||[]; afterData(); } }catch(e){}
+    try{ var c=JSON.parse(localStorage.getItem(CACHEKEY)||"null"); if(c){ rows=c.rows||[]; notes=c.notes||[]; dugovanja=c.dugovanja||[]; zadaci=c.zadaci||[]; afterData(); } }catch(e){}
     if(!silent) toast(err&&err.error==="no_endpoint"?"Postavi /exec adresu u ⚙":"Ne mogu da povučem podatke", true);
   }).finally(function(){ $("nav-refresh").classList.remove("spin"); updateStatusbar(); });
 }
@@ -799,11 +943,11 @@ setInterval(function(){ if(document.visibilityState==="visible" && !saving && ed
 document.addEventListener("visibilitychange", function(){ if(document.visibilityState==="visible" && editingRed===null) refresh(true); });
 
 /* ============ modali ============ */
-function openUnos(){ $("datum").value=todayStr(); KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_iznosOst").value=0; liveDanas(); disarm(); $("modalUnos").classList.add("open"); }
+function openUnos(){ $("datum").value=todayStr(); KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_ekstra").value=0; $("v_ekstraOpis").value=""; liveDanas(); disarm(); $("modalUnos").classList.add("open"); }
 function closeUnos(){ $("modalUnos").classList.remove("open"); }
 function openCfg(){
   $("sIme").value=cfg.ime||""; $("sUrl").value=cfg.url||"";
-  $("sPrazne").value=cfg.prazne||""; $("sP18").value=cfg.p18||""; $("sP36").value=cfg.p36||""; $("sPOst").value=cfg.pOstale||"";
+  $("sPrazne").value=cfg.prazne||""; $("sP18").value=cfg.p18||""; $("sP36").value=cfg.p36||"";
   $("sCost").value=cfg.cost; $("sPr18").value=cfg.pr18; $("sPr36").value=cfg.pr36;
   $("modalCfg").classList.add("open");
 }
@@ -817,7 +961,7 @@ $("cancelCfg").addEventListener("click", closeCfg);
 $("modalCfg").addEventListener("click", function(e){ if(e.target===this) closeCfg(); });
 $("saveCfg").addEventListener("click", function(){
   cfg.ime=$("sIme").value.trim(); cfg.url=$("sUrl").value.trim();
-  cfg.prazne=Number($("sPrazne").value)||0; cfg.p18=Number($("sP18").value)||0; cfg.p36=Number($("sP36").value)||0; cfg.pOstale=Number($("sPOst").value)||0;
+  cfg.prazne=Number($("sPrazne").value)||0; cfg.p18=Number($("sP18").value)||0; cfg.p36=Number($("sP36").value)||0;
   cfg.cost=Number($("sCost").value)||20; cfg.pr18=Number($("sPr18").value)||18; cfg.pr36=Number($("sPr36").value)||36;
   saveCfg(cfg); closeCfg(); toast("Sačuvano ✓"); refresh(true);
 });
