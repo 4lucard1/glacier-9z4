@@ -899,7 +899,7 @@ $("v_ekstra").addEventListener("input", function(){ liveDanas(); disarm(); });
 $("v_ekstraOpis").addEventListener("input", disarm);
 
 var saving=false, armed=false, lastSig="", lastSavedAt=0, armT=null;
-function payload(){ var p = Object.assign({datum:$("datum").value||todayStr()}, vals()); p.ekstra = Math.max(0, eurVal("v_ekstra")); p.ekstraOpis = $("v_ekstraOpis").value.trim(); return p; }
+function payload(){ var p = Object.assign({datum:$("datum").value||todayStr()}, vals()); p.ekstra = Math.max(0, eurVal("v_ekstra")); p.ekstraOpis = $("v_ekstraOpis").value.trim(); p.ime = cfg.ime||""; return p; }
 function sig(p){ return JSON.stringify(p); }
 function arm(msg){ armed=true; var b=$("btnSaveDay"); b.classList.add("armed"); b.textContent=msg; clearTimeout(armT); armT=setTimeout(disarm,3500); }
 function disarm(){ armed=false; clearTimeout(armT); var b=$("btnSaveDay"); b.classList.remove("armed"); b.textContent="Sačuvaj dan"; }
