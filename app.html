@@ -303,7 +303,7 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
   display:flex; align-items:center; justify-content:center; font-size:.8rem; color:var(--mint); background:var(--panel3);}
 .kn-chk.done{background:rgba(63,223,160,.15); border-color:var(--mint);}
 .kn-item.done .kn-main{text-decoration:line-through; color:var(--dim);}
-.dug-ko.on{background:var(--ice); border-color:var(--ice); color:var(--unesi-fg);}
+.dug-ko.on, .dug-vrsta.on{background:var(--ice); border-color:var(--ice); color:var(--unesi-fg);}
 
 /* ================= PIN KAPIJA ================= */
 .gate{position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px;}
@@ -471,7 +471,7 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
           <table>
             <thead><tr>
               <th>Datum</th><th>Nove prazne</th><th>Nap. @18</th><th>Nap. @36</th>
-              <th>Prod. @18</th><th>Prod. @36</th><th>Ekstra</th><th>Neto</th><th></th>
+              <th>Prod. @18</th><th>Prod. @36</th><th>Ekstra</th><th>Korekcija</th><th>Neto</th><th></th>
             </tr></thead>
             <tbody id="tBody"></tbody>
           </table>
@@ -546,6 +546,12 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
     <div class="cnt" id="rowEkstraOpis" style="display:none"><div class="clbl"><b>Opis ekstra</b>npr. napojnica, zaokruženo</div>
       <input class="cval" type="text" id="v_ekstraOpis" maxlength="80" style="width:150px; font-family:'Inter'; font-size:.85rem; letter-spacing:0"></div>
 
+    <div class="csep">Korekcija neta · + ili − sa razlogom</div>
+    <div class="cnt"><div class="clbl"><b>Korekcija (€)</b>može biti minus, npr. -40</div>
+      <input class="cval" type="number" step="0.5" id="v_korekcija" value="0" style="width:90px"></div>
+    <div class="cnt" id="rowKorekcijaOpis" style="display:none"><div class="clbl"><b>Razlog korekcije</b>npr. pokvarena roba, izvađeno za gorivo</div>
+      <input class="cval" type="text" id="v_korekcijaOpis" maxlength="80" style="width:150px; font-family:'Inter'; font-size:.85rem; letter-spacing:0"></div>
+
     <div class="danas">
       <div class="row"><span>Prihod (kasa)</span><b id="dPrihod">0 €</b></div>
       <div class="row"><span>Uloženo (punjenje)</span><b id="dUlozeno">0 €</b></div>
@@ -583,6 +589,12 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
         <button class="btn dug-ko" data-ko="Fox" id="dugKoFox">Fox</button>
       </div>
       <div class="hint">Označi na koga se dug odnosi.</div></div>
+    <div class="mf"><label>Vrsta</label>
+      <div class="frow" style="grid-template-columns:1fr 1fr">
+        <button class="btn dug-vrsta on" data-v="ulog" id="dugVUlog">Ulog u biznis</button>
+        <button class="btn dug-vrsta" data-v="obicno" id="dugVObicno">Obično dugovanje</button>
+      </div>
+      <div class="hint">Ulog ulazi u neto keš (vaš novac u kasi). Obično je samo evidencija.</div></div>
     <div class="mf"><label>Iznos (€)</label><input type="number" id="dugIznos" min="0" step="0.5" placeholder="npr. 200"></div>
     <div class="mf"><label>Opis (opciono)</label><input type="text" id="dugOpis" maxlength="120" placeholder="npr. ulog za materijal"></div>
     <div class="mbtns"><button class="btn" id="cancelDug">Otkaži</button><button class="btn primary" id="saveDug">Sačuvaj</button></div>
@@ -629,17 +641,18 @@ function call(params){
 
 /* ============ obračun ============ */
 function totals(rs){
-  var t = {nap:0,n18:0,n36:0,p18:0,p36:0,ekstra:0};
+  var t = {nap:0,n18:0,n36:0,p18:0,p36:0,ekstra:0,korekcija:0};
   rs.forEach(function(r){
     t.nap+=r.napravljene||0; t.n18+=r.napunjeno18||0; t.n36+=r.napunjeno36||0;
     t.p18+=r.prodato18||0;   t.p36+=r.prodato36||0;
     t.ekstra+=r.ekstra||0;
+    t.korekcija+=r.korekcija||0;
   });
   return t;
 }
 function rowNeto(r){
   var s18=cfg.cost+cfg.pr18, s36=cfg.cost+cfg.pr36;
-  return (r.prodato18*s18 + r.prodato36*s36 + (r.ekstra||0))
+  return (r.prodato18*s18 + r.prodato36*s36 + (r.ekstra||0) + (r.korekcija||0))
        - (r.napunjeno18 + r.napunjeno36)*cfg.cost;
 }
 
@@ -650,7 +663,9 @@ function renderWindows(){
   var profit = t.p18*cfg.pr18 + t.p36*cfg.pr36;
   var ulozeno = (t.n18+t.n36)*cfg.cost;
   var prihod = t.p18*s18 + t.p36*s36;
-  var neto = prihod - ulozeno + t.ekstra;
+  var ulogAktivni = 0;
+  dugovanja.forEach(function(d){ if(d.vrsta==="ulog") ulogAktivni += (d.iznos||0); });
+  var neto = prihod - ulozeno + t.ekstra + t.korekcija + ulogAktivni;
 
   var l18 = cfg.p18 + t.n18 - t.p18;
   var l36 = cfg.p36 + t.n36 - t.p36;
@@ -672,7 +687,13 @@ function renderWindows(){
   $("nProfit").textContent = eur(profit);
   $("nProfitNote").textContent = "na " + (t.p18+t.p36) + " prodatih kesa";
   var nn=$("nNeto"); nn.textContent=(neto>0?"+":"")+eur(neto); nn.className="bigval "+signCls(neto);
-  if($("nNetoNote")) $("nNetoNote").textContent = t.ekstra>0 ? ("uključuje +"+eur(t.ekstra)+" ekstra") : "kasa − ulaganje";
+  if($("nNetoNote")){
+    var parts=[];
+    if(t.ekstra>0) parts.push("+"+eur(t.ekstra)+" ekstra");
+    if(ulogAktivni>0) parts.push("+"+eur(ulogAktivni)+" ulog");
+    if(t.korekcija!==0) parts.push((t.korekcija>0?"+":"")+eur(t.korekcija)+" korekcija");
+    $("nNetoNote").textContent = parts.length ? ("uključuje "+parts.join(", ")) : "kasa − ulaganje";
+  }
 
   // PROMET
   $("pUkupno").textContent = t.p18+t.p36;
@@ -712,6 +733,7 @@ function renderTable(){
         '<td><input class="tedit" type="number" min="0" value="'+r.prodato18+'" id="e_prodato18"></td>'+
         '<td><input class="tedit" type="number" min="0" value="'+r.prodato36+'" id="e_prodato36"></td>'+
         '<td><input class="tedit" type="number" min="0" step="0.5" value="'+(r.ekstra||0)+'" id="e_ekstra"></td>'+
+        '<td><input class="tedit" type="number" step="0.5" value="'+(r.korekcija||0)+'" id="e_korekcija"></td>'+
         '<td>—</td>'+
         '<td><span class="tact"><button class="save" title="Sačuvaj">✓</button><button class="cancel" title="Otkaži">✕</button></span></td>';
       tr.querySelector(".save").addEventListener("click", function(){ saveEdit(r); });
@@ -723,6 +745,7 @@ function renderTable(){
         '<td>'+r.napravljene+'</td><td>'+r.napunjeno18+'</td><td>'+r.napunjeno36+'</td>'+
         '<td>'+r.prodato18+'</td><td>'+r.prodato36+'</td>'+
         '<td'+((r.ekstra||0)?' class="pos"':'')+'>'+((r.ekstra||0)?("+"+eur(r.ekstra)):"—")+(r.ekstraOpis?'<br><span style="font-size:.7rem; color:var(--dim)">'+r.ekstraOpis+'</span>':'')+'</td>'+
+        '<td'+((r.korekcija||0)?(' class="'+((r.korekcija||0)>0?"pos":"neg")+'"'):'')+'>'+((r.korekcija||0)?(((r.korekcija||0)>0?"+":"")+eur(r.korekcija)):"—")+(r.korekcijaOpis?'<br><span style="font-size:.7rem; color:var(--dim)">'+r.korekcijaOpis+'</span>':'')+'</td>'+
         '<td class="'+signCls(neto)+'">'+(neto>0?"+":"")+eur(neto)+'</td>'+
         '<td><span class="tact"><button class="edit" title="Ispravi">✎</button><button class="del" title="Obriši">🗑</button></span></td>';
       tr.querySelector(".edit").addEventListener("click", function(){ editingRed=r.red; renderTable(); });
@@ -741,6 +764,7 @@ function saveEdit(r){
   var p={ action:"red_izmijeni", red:r.red, datum:$("e_datum").value||r.datum };
   KEYS.forEach(function(k){ p[k]=Math.max(0,Math.round(Number($("e_"+k).value)||0)); });
   p.ekstra = Math.max(0, eurVal("e_ekstra")); p.ekstraOpis = r.ekstraOpis||"";
+  p.korekcija = eurVal("e_korekcija"); p.korekcijaOpis = r.korekcijaOpis||"";
   toast("Čuvam izmjenu…");
   call(p).then(function(res){ rows=res.redovi||[]; editingRed=null; afterData(); toast("Izmijenjeno ✓"); })
     .catch(function(){ toast("Izmjena nije uspjela", true); });
@@ -793,30 +817,38 @@ $("ktZad").addEventListener("click", function(){ $("ktZad").classList.add("on");
 
 function renderDug(){
   var feed=$("dugFeed"); feed.innerHTML="";
-  // saldo: zbir po osobi (ko je koliko dao/uložio)
-  var perKo={};
-  dugovanja.forEach(function(d){ var k=d.ko||"?"; perKo[k]=(perKo[k]||0)+(d.iznos||0); });
+  // saldo: ulog po osobi (to je novac u biznisu), obicna dugovanja zasebno
+  var perKo={}, ukupnoUlog=0, ukupnoObicno=0;
+  dugovanja.forEach(function(d){
+    if(d.vrsta==="ulog"){ var k=d.ko||"?"; perKo[k]=(perKo[k]||0)+(d.iznos||0); ukupnoUlog+=(d.iznos||0); }
+    else ukupnoObicno+=(d.iznos||0);
+  });
   var keys=Object.keys(perKo);
-  if(!keys.length){ $("dugSaldo").innerHTML='<span style="color:var(--dim)">Još nema unosa o ulozima/dugovima.</span>'; }
+  if(!keys.length && !ukupnoObicno){ $("dugSaldo").innerHTML='<span style="color:var(--dim)">Još nema unosa o ulozima/dugovima.</span>'; }
   else {
-    var html="Ukupno uloženo / dato:<br>";
-    keys.forEach(function(k){ html+= k+": <b>"+eur(perKo[k])+"</b>&nbsp;&nbsp;"; });
-    if(keys.length===2){ var d=perKo[keys[0]]-perKo[keys[1]];
-      if(d!==0) html+='<br><span class="'+(d>0?"pos":"neg")+'">Razlika: '+keys[(d>0?0:1)]+' je dao '+eur(Math.abs(d))+' više</span>';
-      else html+='<br><span>Izravnato ✓</span>'; }
+    var html="";
+    if(keys.length){
+      html+="Ulog u biznisu (u neto kešu):<br>";
+      keys.forEach(function(k){ html+= k+": <b>"+eur(perKo[k])+"</b>&nbsp;&nbsp;"; });
+      if(keys.length===2){ var d=perKo[keys[0]]-perKo[keys[1]];
+        if(d!==0) html+='<br><span class="'+(d>0?"pos":"neg")+'">Razlika: '+keys[(d>0?0:1)]+' je uložio '+eur(Math.abs(d))+' više</span>';
+        else html+='<br><span>Ulozi izravnati ✓</span>'; }
+    }
+    if(ukupnoObicno>0) html+=(keys.length?'<br>':'')+'<span style="color:var(--dim)">Obična dugovanja: '+eur(ukupnoObicno)+' (ne ulaze u neto)</span>';
     $("dugSaldo").innerHTML=html;
   }
   if(!dugovanja.length){ feed.innerHTML='<div class="nempty">Nema unosa.</div>'; return; }
   dugovanja.forEach(function(d){
     var it=document.createElement("div"); it.className="kn-item";
     var main=document.createElement("div"); main.className="kn-main";
-    main.innerHTML='<div><b>'+(d.ko||"?")+'</b>'+(d.opis?' — '+escapeHtml(d.opis):'')+'</div><div class="kn-meta">'+(d.autor||'')+' · '+(d.vrijeme||'')+'</div>';
+    var badge = d.vrsta==="ulog" ? '<span style="color:var(--ice); font-size:.66rem; border:1px solid var(--ice); border-radius:5px; padding:0 5px; margin-left:6px">ULOG</span>' : '<span style="color:var(--dim); font-size:.66rem; border:1px solid var(--line); border-radius:5px; padding:0 5px; margin-left:6px">dug</span>';
+    main.innerHTML='<div><b>'+(d.ko||"?")+'</b>'+badge+(d.opis?' — '+escapeHtml(d.opis):'')+'</div><div class="kn-meta">'+(d.autor||'')+' · '+(d.vrijeme||'')+'</div>';
     var amt=document.createElement("div"); amt.className="kn-amt"; amt.textContent=eur(d.iznos||0);
     var x=document.createElement("button"); x.className="kn-x"; x.textContent="✕";
     x.addEventListener("click", function(){
       if(!x.classList.contains("arm")){ x.classList.add("arm"); x.textContent="?"; setTimeout(function(){ x.classList.remove("arm"); x.textContent="✕"; },3000); return; }
       x.disabled=true;
-      call({action:"dug_obrisi", id:d.id}).then(function(res){ dugovanja=res.dugovanja||[]; renderDug(); toast("Obrisano"); })
+      call({action:"dug_obrisi", id:d.id}).then(function(res){ dugovanja=res.dugovanja||[]; renderDug(); renderWindows(); toast("Obrisano"); })
         .catch(function(){ toast("Brisanje nije uspjelo", true); x.disabled=false; });
     });
     it.appendChild(main); it.appendChild(amt); it.appendChild(x); feed.appendChild(it);
@@ -857,8 +889,8 @@ function addZad(){
 }
 
 // dug modal
-var dugKo="";
-function openDug(){ dugKo=""; $("dugIznos").value=""; $("dugOpis").value=""; $("dugKoIce").classList.remove("on"); $("dugKoFox").classList.remove("on"); $("modalDug").classList.add("open"); }
+var dugKo="", dugVrsta="ulog";
+function openDug(){ dugKo=""; dugVrsta="ulog"; $("dugIznos").value=""; $("dugOpis").value=""; $("dugKoIce").classList.remove("on"); $("dugKoFox").classList.remove("on"); $("dugVUlog").classList.add("on"); $("dugVObicno").classList.remove("on"); $("modalDug").classList.add("open"); }
 function closeDug(){ $("modalDug").classList.remove("open"); }
 $("dugAdd").addEventListener("click", openDug);
 $("closeDug").addEventListener("click", closeDug);
@@ -866,13 +898,15 @@ $("cancelDug").addEventListener("click", closeDug);
 $("modalDug").addEventListener("click", function(e){ if(e.target===this) closeDug(); });
 $("dugKoIce").addEventListener("click", function(){ dugKo="Ice"; this.classList.add("on"); $("dugKoFox").classList.remove("on"); });
 $("dugKoFox").addEventListener("click", function(){ dugKo="Fox"; this.classList.add("on"); $("dugKoIce").classList.remove("on"); });
+$("dugVUlog").addEventListener("click", function(){ dugVrsta="ulog"; this.classList.add("on"); $("dugVObicno").classList.remove("on"); });
+$("dugVObicno").addEventListener("click", function(){ dugVrsta="obicno"; this.classList.add("on"); $("dugVUlog").classList.remove("on"); });
 $("saveDug").addEventListener("click", function(){
   var iznos=Math.max(0, eurVal("dugIznos"));
   if(!dugKo){ toast("Označi Ice ili Fox", true); return; }
   if(iznos<=0){ toast("Upiši iznos", true); return; }
   var btn=$("saveDug"); btn.disabled=true;
-  call({action:"dug_dodaj", autor:cfg.ime||dugKo, ko:dugKo, iznos:iznos, opis:$("dugOpis").value.trim()})
-    .then(function(res){ dugovanja=res.dugovanja||[]; closeDug(); renderDug(); toast("Sačuvano ✓"); })
+  call({action:"dug_dodaj", autor:cfg.ime||dugKo, ko:dugKo, iznos:iznos, opis:$("dugOpis").value.trim(), vrsta:dugVrsta})
+    .then(function(res){ dugovanja=res.dugovanja||[]; closeDug(); renderDug(); renderWindows(); toast("Sačuvano ✓"); })
     .catch(function(){ toast("Nije sačuvano", true); }).finally(function(){ btn.disabled=false; });
 });
 
@@ -883,9 +917,12 @@ function liveDanas(){
   var ekstra=Math.max(0, eurVal("v_ekstra"));
   $("rowEkstraOpis").style.display = ekstra>0 ? "flex" : "none";
   if(ekstra===0) $("v_ekstraOpis").value="";
+  var korekcija=eurVal("v_korekcija");
+  $("rowKorekcijaOpis").style.display = korekcija!==0 ? "flex" : "none";
+  if(korekcija===0) $("v_korekcijaOpis").value="";
   var prihod=v.prodato18*s18+v.prodato36*s36;
   var ulozeno=(v.napunjeno18+v.napunjeno36)*cfg.cost;
-  var profit=v.prodato18*cfg.pr18+v.prodato36*cfg.pr36, neto=prihod-ulozeno+ekstra;
+  var profit=v.prodato18*cfg.pr18+v.prodato36*cfg.pr36, neto=prihod-ulozeno+ekstra+korekcija;
   $("dPrihod").textContent=eur(prihod+ekstra); $("dUlozeno").textContent=eur(ulozeno);
   $("dProfit").textContent=eur(profit);
   var n=$("dNeto"); n.textContent=(neto>0?"+":"")+eur(neto); n.className=signCls(neto);
@@ -897,16 +934,18 @@ document.querySelectorAll(".cbtn").forEach(function(b){
 KEYS.forEach(function(k){ $("v_"+k).addEventListener("input", function(){ liveDanas(); disarm(); }); });
 $("v_ekstra").addEventListener("input", function(){ liveDanas(); disarm(); });
 $("v_ekstraOpis").addEventListener("input", disarm);
+$("v_korekcija").addEventListener("input", function(){ liveDanas(); disarm(); });
+$("v_korekcijaOpis").addEventListener("input", disarm);
 
 var saving=false, armed=false, lastSig="", lastSavedAt=0, armT=null;
-function payload(){ var p = Object.assign({datum:$("datum").value||todayStr()}, vals()); p.ekstra = Math.max(0, eurVal("v_ekstra")); p.ekstraOpis = $("v_ekstraOpis").value.trim(); p.ime = cfg.ime||""; return p; }
+function payload(){ var p = Object.assign({datum:$("datum").value||todayStr()}, vals()); p.ekstra = Math.max(0, eurVal("v_ekstra")); p.ekstraOpis = $("v_ekstraOpis").value.trim(); p.korekcija = eurVal("v_korekcija"); p.korekcijaOpis = $("v_korekcijaOpis").value.trim(); p.ime = cfg.ime||""; return p; }
 function sig(p){ return JSON.stringify(p); }
 function arm(msg){ armed=true; var b=$("btnSaveDay"); b.classList.add("armed"); b.textContent=msg; clearTimeout(armT); armT=setTimeout(disarm,3500); }
 function disarm(){ armed=false; clearTimeout(armT); var b=$("btnSaveDay"); b.classList.remove("armed"); b.textContent="Sačuvaj dan"; }
 $("btnSaveDay").addEventListener("click", function(){
   if(saving) return;
   if(!cfg.url){ toast("Prvo postavi /exec adresu u ⚙", true); openCfg(); return; }
-  var v=vals(), sum=0; KEYS.forEach(function(k){ sum+=v[k]; }); sum+=Math.max(0, eurVal("v_ekstra"));
+  var v=vals(), sum=0; KEYS.forEach(function(k){ sum+=v[k]; }); sum+=Math.max(0, eurVal("v_ekstra")); sum+=Math.abs(eurVal("v_korekcija"));
   if(sum===0){ toast("Sve je 0 — nema šta da se sačuva", true); disarm(); return; }
   if(!armed){ var s=sig(payload());
     if(s===lastSig && (Date.now()-lastSavedAt)<60000) arm("⚠ Isti unos — klikni opet");
@@ -914,7 +953,7 @@ $("btnSaveDay").addEventListener("click", function(){
   disarm(); saving=true; var b=$("btnSaveDay"); b.disabled=true; b.textContent="Čuvam…";
   var p=payload();
   call(p).then(function(){ lastSig=sig(p); lastSavedAt=Date.now();
-    KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_ekstra").value=0; $("v_ekstraOpis").value=""; liveDanas();
+    KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_ekstra").value=0; $("v_ekstraOpis").value=""; $("v_korekcija").value=0; $("v_korekcijaOpis").value=""; liveDanas();
     toast("Sačuvano ✓"); closeUnos(); refresh(true);
   }).catch(function(){ toast("Nije sačuvano — provjeri vezu", true); })
     .finally(function(){ saving=false; b.disabled=false; b.textContent="Sačuvaj dan"; });
@@ -943,7 +982,7 @@ setInterval(function(){ if(document.visibilityState==="visible" && !saving && ed
 document.addEventListener("visibilitychange", function(){ if(document.visibilityState==="visible" && editingRed===null) refresh(true); });
 
 /* ============ modali ============ */
-function openUnos(){ $("datum").value=todayStr(); KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_ekstra").value=0; $("v_ekstraOpis").value=""; liveDanas(); disarm(); $("modalUnos").classList.add("open"); }
+function openUnos(){ $("datum").value=todayStr(); KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_ekstra").value=0; $("v_ekstraOpis").value=""; $("v_korekcija").value=0; $("v_korekcijaOpis").value=""; liveDanas(); disarm(); $("modalUnos").classList.add("open"); }
 function closeUnos(){ $("modalUnos").classList.remove("open"); }
 function openCfg(){
   $("sIme").value=cfg.ime||""; $("sUrl").value=cfg.url||"";
