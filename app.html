@@ -304,6 +304,10 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
 .kn-chk.done{background:rgba(63,223,160,.15); border-color:var(--mint);}
 .kn-item.done .kn-main{text-decoration:line-through; color:var(--dim);}
 .dug-ko.on, .dug-vrsta.on{background:var(--ice); border-color:var(--ice); color:var(--unesi-fg);}
+.kor-smjer{flex:1; padding:9px 8px; border-radius:10px; border:1px solid var(--line); background:var(--panel2); color:var(--muted); font-family:'Inter'; font-size:.82rem; cursor:pointer;}
+.kor-smjer:first-of-type{margin-right:8px;}
+.kor-smjer.on[data-s="plus"]{background:var(--mint); border-color:var(--mint); color:#06243A;}
+.kor-smjer.on[data-s="minus"]{background:var(--red); border-color:var(--red); color:#fff;}
 
 /* ================= PIN KAPIJA ================= */
 .gate{position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px;}
@@ -546,9 +550,12 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
     <div class="cnt" id="rowEkstraOpis" style="display:none"><div class="clbl"><b>Opis ekstra</b>npr. napojnica, zaokruženo</div>
       <input class="cval" type="text" id="v_ekstraOpis" maxlength="80" style="width:150px; font-family:'Inter'; font-size:.85rem; letter-spacing:0"></div>
 
-    <div class="csep">Korekcija neta · + ili − sa razlogom</div>
-    <div class="cnt"><div class="clbl"><b>Korekcija (€)</b>može biti minus, npr. -40</div>
-      <input class="cval" type="number" step="0.5" id="v_korekcija" value="0" style="width:90px"></div>
+    <div class="csep">Korekcija neta · sa razlogom</div>
+    <div class="cnt"><div class="clbl"><b>Korekcija (€)</b>izaberi smjer pa upiši iznos</div>
+      <input class="cval" type="number" min="0" inputmode="decimal" step="0.5" id="v_korekcija" value="0" style="width:90px"></div>
+    <div class="cnt" style="margin-top:6px"><div class="clbl"></div>
+      <button type="button" class="kor-smjer on" data-s="plus" id="korPlus">＋ Dodaj na neto</button>
+      <button type="button" class="kor-smjer" data-s="minus" id="korMinus">− Oduzmi od neta</button></div>
     <div class="cnt" id="rowKorekcijaOpis" style="display:none"><div class="clbl"><b>Razlog korekcije</b>npr. pokvarena roba, izvađeno za gorivo</div>
       <input class="cval" type="text" id="v_korekcijaOpis" maxlength="80" style="width:150px; font-family:'Inter'; font-size:.85rem; letter-spacing:0"></div>
 
@@ -917,9 +924,10 @@ function liveDanas(){
   var ekstra=Math.max(0, eurVal("v_ekstra"));
   $("rowEkstraOpis").style.display = ekstra>0 ? "flex" : "none";
   if(ekstra===0) $("v_ekstraOpis").value="";
-  var korekcija=eurVal("v_korekcija");
-  $("rowKorekcijaOpis").style.display = korekcija!==0 ? "flex" : "none";
-  if(korekcija===0) $("v_korekcijaOpis").value="";
+  var korAps=Math.abs(eurVal("v_korekcija"));
+  var korekcija = korSmjer==="minus" ? -korAps : korAps;
+  $("rowKorekcijaOpis").style.display = korAps>0 ? "flex" : "none";
+  if(korAps===0) $("v_korekcijaOpis").value="";
   var prihod=v.prodato18*s18+v.prodato36*s36;
   var ulozeno=(v.napunjeno18+v.napunjeno36)*cfg.cost;
   var profit=v.prodato18*cfg.pr18+v.prodato36*cfg.pr36, neto=prihod-ulozeno+ekstra+korekcija;
@@ -934,11 +942,14 @@ document.querySelectorAll(".cbtn").forEach(function(b){
 KEYS.forEach(function(k){ $("v_"+k).addEventListener("input", function(){ liveDanas(); disarm(); }); });
 $("v_ekstra").addEventListener("input", function(){ liveDanas(); disarm(); });
 $("v_ekstraOpis").addEventListener("input", disarm);
+var korSmjer="plus";
+$("korPlus").addEventListener("click", function(){ korSmjer="plus"; this.classList.add("on"); $("korMinus").classList.remove("on"); liveDanas(); disarm(); });
+$("korMinus").addEventListener("click", function(){ korSmjer="minus"; this.classList.add("on"); $("korPlus").classList.remove("on"); liveDanas(); disarm(); });
 $("v_korekcija").addEventListener("input", function(){ liveDanas(); disarm(); });
 $("v_korekcijaOpis").addEventListener("input", disarm);
 
 var saving=false, armed=false, lastSig="", lastSavedAt=0, armT=null;
-function payload(){ var p = Object.assign({datum:$("datum").value||todayStr()}, vals()); p.ekstra = Math.max(0, eurVal("v_ekstra")); p.ekstraOpis = $("v_ekstraOpis").value.trim(); p.korekcija = eurVal("v_korekcija"); p.korekcijaOpis = $("v_korekcijaOpis").value.trim(); p.ime = cfg.ime||""; return p; }
+function payload(){ var p = Object.assign({datum:$("datum").value||todayStr()}, vals()); p.ekstra = Math.max(0, eurVal("v_ekstra")); p.ekstraOpis = $("v_ekstraOpis").value.trim(); p.korekcija = (korSmjer==="minus"?-1:1)*Math.abs(eurVal("v_korekcija")); p.korekcijaOpis = $("v_korekcijaOpis").value.trim(); p.ime = cfg.ime||""; return p; }
 function sig(p){ return JSON.stringify(p); }
 function arm(msg){ armed=true; var b=$("btnSaveDay"); b.classList.add("armed"); b.textContent=msg; clearTimeout(armT); armT=setTimeout(disarm,3500); }
 function disarm(){ armed=false; clearTimeout(armT); var b=$("btnSaveDay"); b.classList.remove("armed"); b.textContent="Sačuvaj dan"; }
@@ -953,7 +964,7 @@ $("btnSaveDay").addEventListener("click", function(){
   disarm(); saving=true; var b=$("btnSaveDay"); b.disabled=true; b.textContent="Čuvam…";
   var p=payload();
   call(p).then(function(){ lastSig=sig(p); lastSavedAt=Date.now();
-    KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_ekstra").value=0; $("v_ekstraOpis").value=""; $("v_korekcija").value=0; $("v_korekcijaOpis").value=""; liveDanas();
+    KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_ekstra").value=0; $("v_ekstraOpis").value=""; $("v_korekcija").value=0; $("v_korekcijaOpis").value=""; korSmjer="plus"; if($("korPlus")){$("korPlus").classList.add("on");$("korMinus").classList.remove("on");} liveDanas();
     toast("Sačuvano ✓"); closeUnos(); refresh(true);
   }).catch(function(){ toast("Nije sačuvano — provjeri vezu", true); })
     .finally(function(){ saving=false; b.disabled=false; b.textContent="Sačuvaj dan"; });
@@ -982,7 +993,7 @@ setInterval(function(){ if(document.visibilityState==="visible" && !saving && ed
 document.addEventListener("visibilitychange", function(){ if(document.visibilityState==="visible" && editingRed===null) refresh(true); });
 
 /* ============ modali ============ */
-function openUnos(){ $("datum").value=todayStr(); KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_ekstra").value=0; $("v_ekstraOpis").value=""; $("v_korekcija").value=0; $("v_korekcijaOpis").value=""; liveDanas(); disarm(); $("modalUnos").classList.add("open"); }
+function openUnos(){ $("datum").value=todayStr(); KEYS.forEach(function(k){ $("v_"+k).value=0; }); $("v_ekstra").value=0; $("v_ekstraOpis").value=""; $("v_korekcija").value=0; $("v_korekcijaOpis").value=""; korSmjer="plus"; if($("korPlus")){$("korPlus").classList.add("on");$("korMinus").classList.remove("on");} liveDanas(); disarm(); $("modalUnos").classList.add("open"); }
 function closeUnos(){ $("modalUnos").classList.remove("open"); }
 function openCfg(){
   $("sIme").value=cfg.ime||""; $("sUrl").value=cfg.url||"";
