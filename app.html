@@ -309,6 +309,38 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
 .kor-smjer.on[data-s="plus"]{background:var(--mint); border-color:var(--mint); color:#06243A;}
 .kor-smjer.on[data-s="minus"]{background:var(--red); border-color:var(--red); color:#fff;}
 
+
+/* ===== Audit log (cijeli ekran) ===== */
+.audit-screen{position:fixed; inset:0; z-index:250; background:var(--bg); display:none; flex-direction:column;}
+.audit-screen.open{display:flex;}
+.audit-head{display:flex; align-items:center; gap:12px; padding:14px 20px; border-bottom:1px solid var(--line); background:var(--panel3);}
+.audit-head .pill{font-family:'Barlow Condensed'; font-weight:600; font-size:.7rem; letter-spacing:.12em; background:var(--pill-bg); color:var(--pill-fg); padding:3px 9px; border-radius:99px; text-transform:uppercase;}
+.audit-head h2{font-family:'Barlow Condensed'; font-weight:600; font-size:1.2rem; letter-spacing:.12em; text-transform:uppercase;}
+.audit-head .a-count{font-size:.72rem; color:var(--dim); margin-left:auto;}
+.audit-head .a-close{width:38px; height:38px; border-radius:10px; border:1px solid var(--line); background:var(--panel); color:var(--muted); font-size:1.1rem; cursor:pointer;}
+.audit-tools{display:flex; gap:8px; padding:11px 20px; border-bottom:1px solid var(--line); flex-wrap:wrap; align-items:center;}
+.audit-tools input{flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; color:var(--text); padding:8px 11px; font-size:.85rem; font-family:'Inter';}
+.audit-tools input:focus{outline:none; border-color:var(--ice);}
+.audit-tools select{background:var(--panel2); border:1px solid var(--line); color:var(--text); border-radius:9px; padding:8px 11px; font-size:.82rem; font-family:'Inter'; cursor:pointer; color-scheme:dark;}
+.audit-body{flex:1; overflow-y:auto; padding:0 20px 30px;}
+.audit-row{display:grid; grid-template-columns:96px 74px 90px 1fr; gap:12px; align-items:start; padding:11px 4px; border-bottom:1px solid rgba(128,128,128,.13); font-size:.85rem;}
+.audit-row .a-d{color:var(--muted); white-space:nowrap;}
+.audit-row .a-t{color:var(--dim); white-space:nowrap; font-variant-numeric:tabular-nums;}
+.audit-row .a-tip{font-size:.66rem; letter-spacing:.04em; text-transform:uppercase; padding:2px 7px; border-radius:6px; border:1px solid var(--line); text-align:center; align-self:start; white-space:nowrap;}
+.audit-row .a-tip.unos{color:var(--mint); border-color:var(--mint);}
+.audit-row .a-tip.brisanje{color:var(--red); border-color:var(--red);}
+.audit-row .a-tip.izmjena{color:var(--gold); border-color:var(--gold);}
+.audit-row .a-tip.dug,.audit-row .a-tip.ulog{color:var(--ice); border-color:var(--ice);}
+.audit-row .a-o{color:var(--text); word-break:break-word; line-height:1.45;}
+.audit-row .a-ko{color:var(--dim); font-size:.72rem; margin-top:2px;}
+.audit-head-row{display:grid; grid-template-columns:96px 74px 90px 1fr; gap:12px; padding:9px 4px; border-bottom:1px solid var(--line); font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); position:sticky; top:0; background:var(--bg);}
+.audit-empty{text-align:center; color:var(--dim); padding:40px; font-size:.9rem;}
+@media(max-width:760px){
+  .audit-row,.audit-head-row{grid-template-columns:72px 60px 1fr;}
+  .audit-row .a-tip{display:none;}
+  .audit-head-row span:nth-child(3){display:none;}
+}
+
 /* ================= PIN KAPIJA ================= */
 .gate{position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px;}
 .gate.hidden{display:none;}
@@ -350,6 +382,7 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
   <a class="sb-btn" data-tip="Analitika" href="dashboard.html">📊</a>
   <button class="sb-btn" data-tip="Tabela unosa" id="nav-table">▤</button>
   <button class="sb-btn" data-tip="Bilješke" id="nav-notes">📝</button>
+  <button class="sb-btn" data-tip="Istorija (audit)" id="nav-audit">📋</button>
   <div class="sb-sep"></div>
   <button class="sb-btn" data-tip="Uskoro" disabled style="opacity:.4">📦</button>
   <button class="sb-btn" data-tip="Uskoro" disabled style="opacity:.4">📈</button>
@@ -608,6 +641,31 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
   </div>
 </div>
 
+<!-- ===== AUDIT LOG (cijeli ekran) ===== -->
+<div class="audit-screen" id="auditScreen">
+  <div class="audit-head">
+    <span class="pill">LOG</span>
+    <h2>Prikazivač događaja</h2>
+    <span class="a-count" id="auditCount"></span>
+    <button class="a-close" id="auditClose" title="Zatvori">✕</button>
+  </div>
+  <div class="audit-tools">
+    <input type="text" id="auditSearch" placeholder="Pretraga (opis, ime, datum)…">
+    <select id="auditFilter">
+      <option value="">Sve vrste</option>
+      <option value="Unos">Unosi</option>
+      <option value="Brisanje">Brisanja</option>
+      <option value="Izmjena">Izmjene</option>
+      <option value="Dug">Dugovi</option>
+      <option value="Ulog">Ulozi</option>
+      <option value="Zadatak">Zadaci</option>
+      <option value="Bilješka">Bilješke</option>
+    </select>
+  </div>
+  <div class="audit-head-row"><span>Datum</span><span>Vrijeme</span><span>Tip</span><span>Opis</span></div>
+  <div class="audit-body" id="auditBody"><div class="audit-empty">Još nema zabilježenih događaja.</div></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -617,7 +675,7 @@ var DEF = { url:"", ime:"", prazne:0, p18:0, p36:0, cost:20, pr18:18, pr36:36, t
 function loadCfg(){ try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSKEY)||"{}")); }catch(e){ return Object.assign({},DEF); } }
 function saveCfg(c){ localStorage.setItem(LSKEY, JSON.stringify(c)); }
 var cfg = loadCfg();
-var rows = [], notes = [], dugovanja = [], zadaci = [], editingRed = null;
+var rows = [], notes = [], dugovanja = [], zadaci = [], audit = [], editingRed = null;
 var KEYS = ["napravljene","napunjeno18","napunjeno36","prodato18","prodato36"];
 function eurVal(id){ var v=Number(String($(id).value).replace(",",".")); return isNaN(v)?0:Math.round(v*100)/100; }
 
@@ -639,6 +697,7 @@ function call(params){
     var t = setTimeout(function(){ cleanup(); reject({error:"timeout"}); }, 15000);
     function cleanup(){ try{ delete window[cb]; }catch(e){ window[cb]=undefined; } if(s.parentNode) s.parentNode.removeChild(s); clearTimeout(t); }
     window[cb] = function(res){ cleanup(); (res && res.ok) ? resolve(res) : reject(res||{error:"bad"}); };
+    if(cfg.ime && params.ime===undefined) params.ime=cfg.ime;
     var q = new URLSearchParams(Object.assign({callback:cb}, params)).toString();
     s.src = cfg.url + (cfg.url.indexOf("?")>-1?"&":"?") + q;
     s.onerror = function(){ cleanup(); reject({error:"network"}); };
@@ -885,6 +944,48 @@ function renderZad(){
 }
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
+/* ============ AUDIT LOG ============ */
+function tipKlasa(tip){
+  var t=(tip||"").toLowerCase();
+  if(t.indexOf("bris")>-1) return "brisanje";
+  if(t.indexOf("izmjen")>-1) return "izmjena";
+  if(t.indexOf("unos")>-1) return "unos";
+  if(t.indexOf("ulog")>-1) return "ulog";
+  if(t.indexOf("dug")>-1) return "dug";
+  return "";
+}
+function renderAudit(){
+  var body=$("auditBody"); if(!body) return;
+  var q=($("auditSearch").value||"").trim().toLowerCase();
+  var f=$("auditFilter").value||"";
+  var list=audit.filter(function(a){
+    if(f && (a.tip||"").indexOf(f)===-1) return false;
+    if(q){
+      var blob=((a.datum||"")+" "+(a.vrijeme||"")+" "+(a.ko||"")+" "+(a.tip||"")+" "+(a.opis||"")).toLowerCase();
+      if(blob.indexOf(q)===-1) return false;
+    }
+    return true;
+  });
+  $("auditCount").textContent = list.length + (list.length===1?" događaj":" događaja");
+  if(!list.length){ body.innerHTML='<div class="audit-empty">Nema događaja za prikaz.</div>'; return; }
+  body.innerHTML="";
+  list.forEach(function(a){
+    var row=document.createElement("div"); row.className="audit-row";
+    row.innerHTML =
+      '<div class="a-d">'+escapeHtml(a.datum||"")+'</div>'+
+      '<div class="a-t">'+escapeHtml(a.vrijeme||"")+'</div>'+
+      '<div class="a-tip '+tipKlasa(a.tip)+'">'+escapeHtml(a.tip||"")+'</div>'+
+      '<div><div class="a-o">'+escapeHtml(a.opis||"")+'</div>'+(a.ko?'<div class="a-ko">'+escapeHtml(a.ko)+'</div>':'')+'</div>';
+    body.appendChild(row);
+  });
+}
+function openAudit(){ $("auditScreen").classList.add("open"); renderAudit(); }
+function closeAudit(){ $("auditScreen").classList.remove("open"); }
+$("nav-audit").addEventListener("click", openAudit);
+$("auditClose").addEventListener("click", closeAudit);
+$("auditSearch").addEventListener("input", renderAudit);
+$("auditFilter").addEventListener("change", renderAudit);
+
 // zadatak dodaj
 $("zadAdd").addEventListener("click", addZad);
 $("zadText").addEventListener("keydown", function(e){ if(e.key==="Enter") addZad(); });
@@ -971,21 +1072,21 @@ $("btnSaveDay").addEventListener("click", function(){
 });
 
 /* ============ osvježavanje ============ */
-function afterData(){ renderWindows(); buildMonthFilter(); renderTable(); renderNotes(); renderDug(); renderZad(); }
+function afterData(){ renderWindows(); buildMonthFilter(); renderTable(); renderNotes(); renderDug(); renderZad(); renderAudit(); }
 function refresh(silent){
   var dot=$("dot"), stat=$("stat");
   if(!cfg.url){ $("app").style.display="none"; $("empty").style.display="block"; stat.textContent="nije povezano"; return; }
   $("app").style.display=""; $("empty").style.display="none";
   $("nav-refresh").classList.add("spin"); if(!silent) stat.textContent="učitavam…";
   call({action:"podaci"}).then(function(res){
-    rows=res.redovi||[]; notes=res.beleske||[]; dugovanja=res.dugovanja||[]; zadaci=res.zadaci||[];
-    try{ localStorage.setItem(CACHEKEY, JSON.stringify({rows:rows,notes:notes,dugovanja:dugovanja,zadaci:zadaci})); }catch(e){}
+    rows=res.redovi||[]; notes=res.beleske||[]; dugovanja=res.dugovanja||[]; zadaci=res.zadaci||[]; audit=res.audit||[];
+    try{ localStorage.setItem(CACHEKEY, JSON.stringify({rows:rows,notes:notes,dugovanja:dugovanja,zadaci:zadaci,audit:audit})); }catch(e){}
     dot.className="dot on";
     var now=new Date(); stat.textContent="ažurirano "+String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
     afterData(); if(!silent) toast("Osvježeno ✓");
   }).catch(function(err){
     dot.className="dot err"; stat.textContent="greška veze";
-    try{ var c=JSON.parse(localStorage.getItem(CACHEKEY)||"null"); if(c){ rows=c.rows||[]; notes=c.notes||[]; dugovanja=c.dugovanja||[]; zadaci=c.zadaci||[]; afterData(); } }catch(e){}
+    try{ var c=JSON.parse(localStorage.getItem(CACHEKEY)||"null"); if(c){ rows=c.rows||[]; notes=c.notes||[]; dugovanja=c.dugovanja||[]; zadaci=c.zadaci||[]; audit=c.audit||[]; afterData(); } }catch(e){}
     if(!silent) toast(err&&err.error==="no_endpoint"?"Postavi /exec adresu u ⚙":"Ne mogu da povučem podatke", true);
   }).finally(function(){ $("nav-refresh").classList.remove("spin"); updateStatusbar(); });
 }
