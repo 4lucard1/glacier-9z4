@@ -341,6 +341,33 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
   .audit-head-row span:nth-child(3){display:none;}
 }
 
+
+/* ===== Sekcije (Ice Bags / Owl) ===== */
+.sek-switch{display:flex; gap:6px; margin-left:18px;}
+.sek-btn{border:1px solid var(--line); background:transparent; color:var(--muted); font-family:'Inter'; font-weight:500;
+  font-size:.82rem; padding:7px 14px; border-radius:10px; cursor:pointer; white-space:nowrap;}
+.sek-btn.on{background:var(--pill-bg); border-color:var(--ice); color:var(--ice);}
+.sek-btn:hover{color:var(--text);}
+.owl-card .pill.owl{background:rgba(168,130,255,.16); color:#b79bff;}
+.win-head .pill.owl{background:rgba(168,130,255,.16); color:#b79bff;}
+.owl-soon{display:flex; flex-direction:column; gap:7px; max-height:170px; overflow-y:auto;}
+.owl-soon .os-item{display:flex; justify-content:space-between; gap:8px; font-size:.82rem; padding:7px 9px;
+  background:var(--panel2); border:1px solid var(--line); border-radius:9px;}
+.owl-soon .os-item .os-amt{font-family:'Barlow Condensed'; font-weight:600; white-space:nowrap;}
+.owl-soon .os-item.due{border-color:var(--gold);}
+.owl-soon .os-item.past{border-color:var(--red);}
+.owl-filter{background:var(--panel2); border:1px solid var(--line); color:var(--text); border-radius:8px;
+  padding:5px 9px; font-size:.78rem; font-family:'Inter'; cursor:pointer; color-scheme:dark;}
+.owl-table th:nth-child(2),.owl-table th:nth-child(3),.owl-table th:nth-child(4),.owl-table th:nth-child(5),
+.owl-table td:nth-child(2),.owl-table td:nth-child(3),.owl-table td:nth-child(4),.owl-table td:nth-child(5){text-align:right;}
+.owl-status{font-size:.66rem; letter-spacing:.04em; text-transform:uppercase; padding:2px 8px; border-radius:6px; border:1px solid var(--line); white-space:nowrap;}
+.owl-status.akt{color:var(--ice); border-color:var(--ice);}
+.owl-status.nap{color:var(--mint); border-color:var(--mint);}
+.owl-naplati-btn{background:var(--mint); color:#06243A; border:none; border-radius:7px; padding:5px 10px; font-size:.74rem; font-weight:600; cursor:pointer; font-family:'Inter';}
+.owl-del-btn{background:none; border:none; color:var(--dim); cursor:pointer; font-size:.82rem; padding:3px 6px;}
+.owl-del-btn.arm{color:var(--red);}
+.dug-vrsta.on{}
+
 /* ================= PIN KAPIJA ================= */
 .gate{position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px;}
 .gate.hidden{display:none;}
@@ -395,13 +422,19 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
 <div class="main">
   <!-- ================= HEADER ================= -->
   <header>
-    <div class="logo">ICE<b>BERG</b> <span>KONZOLA</span></div>
+    <div class="logo">ICE<b>BERG</b></div>
+    <div class="sek-switch">
+      <button class="sek-btn on" data-sek="icebags" id="sekIce">🧊 Ice Bags</button>
+      <button class="sek-btn" data-sek="owl" id="sekOwl">🦉 Owl</button>
+    </div>
     <div class="hstat"><span class="dot" id="dot"></span><span id="stat">—</span></div>
     <div class="hspace"></div>
     <button class="btn-unesi" id="btnUnesi"><span class="plus">+</span> Unesi</button>
   </header>
 
   <div class="content" id="app" style="display:none">
+
+    <div class="sekcija" id="sec-icebags">
 
     <!-- ====== RED 1: PROZORI ====== -->
     <div class="row1">
@@ -527,7 +560,68 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
       </div>
 
     </div>
-  </div>
+    </div><!-- /sec-icebags -->
+
+    <!-- ====== OWL SEKCIJA ====== -->
+    <div class="sekcija" id="sec-owl" style="display:none">
+      <div class="row1">
+        <div class="win owl-card">
+          <div class="win-head"><span class="pill owl">🦉</span><h3>Owl · Aktivno</h3><span class="tag">trenutno uloženo</span></div>
+          <div class="win-body">
+            <div class="slbl">Aktivno uloženo (vani)</div>
+            <div class="bigval" id="owlAktivno">0 €</div>
+            <div class="snote" id="owlAktivnoNote">koliko je trenutno u Owl-u</div>
+          </div>
+        </div>
+        <div class="win owl-card">
+          <div class="win-head"><span class="pill owl">🦉</span><h3>Owl · Prinos</h3><span class="tag">koji čeka</span></div>
+          <div class="win-body">
+            <div class="slbl">Očekivani prinos (aktivni)</div>
+            <div class="bigval pos" id="owlPrinos">0 €</div>
+            <div class="snote" id="owlVratiti">za vratiti ukupno: 0 €</div>
+          </div>
+        </div>
+        <div class="win owl-card">
+          <div class="win-head"><span class="pill owl">🦉</span><h3>Owl · Naplaćeno</h3><span class="tag">do sad</span></div>
+          <div class="win-body">
+            <div class="slbl">Ukupno naplaćeno</div>
+            <div class="bigval" id="owlNaplaceno">0 €</div>
+            <div class="snote" id="owlZaradaNote">ostvaren prinos: 0 €</div>
+          </div>
+        </div>
+        <div class="win owl-card">
+          <div class="win-head"><span class="pill owl">🦉</span><h3>Owl · Uskoro</h3><span class="tag">dospijeva</span></div>
+          <div class="win-body">
+            <div class="owl-soon" id="owlSoon"><div class="nempty">Nema aktivnih uloga.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row-main owl-main">
+        <div class="win tablewin">
+          <div class="win-head"><span class="pill owl">OWL</span><h3>Ulozi</h3>
+            <span class="tag" style="margin-left:auto" id="owlFilterWrap">
+              <select id="owlFilter" class="owl-filter">
+                <option value="aktivni">Aktivni</option>
+                <option value="naplaceni">Naplaćeni</option>
+                <option value="svi">Svi</option>
+              </select>
+            </span>
+          </div>
+          <div class="win-body">
+            <div class="tablescroll">
+              <table class="dtable owl-table">
+                <thead><tr>
+                  <th>Datum uloga</th><th>Iznos</th><th>%</th><th>Prinos</th><th>Za vratiti</th><th>Datum prihoda</th><th>Status</th><th></th>
+                </tr></thead>
+                <tbody id="owlTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /sec-owl -->
+  </div><!-- /app -->
 
   <div class="statusbar">
     <span class="sb-item">🧊 <b>ICEBERG</b></span>
@@ -641,6 +735,24 @@ body.light .statusbar{background:#1B2733; border-top-color:#1B2733; color:#C7D2D
   </div>
 </div>
 
+<!-- ===== MODAL: Owl ulog ===== -->
+<div class="modal-bg" id="modalOwl">
+  <div class="modal" style="max-width:440px">
+    <h2><span>🦉</span> Novi Owl ulog <button class="x" id="closeOwl">✕</button></h2>
+    <div class="mf"><label>Iznos uloga (€)</label><input type="number" id="owlIznos" min="0" step="0.5" inputmode="decimal" placeholder="npr. 500"></div>
+    <div class="mf"><label>Procenat prinosa (%)</label><input type="number" id="owlProcenat" min="0" step="0.5" inputmode="decimal" placeholder="npr. 10"></div>
+    <div class="mf"><label>Datum uloga</label><input type="date" id="owlDatumU"></div>
+    <div class="mf"><label>Datum prihoda (kad se vraća)</label><input type="date" id="owlDatumP"></div>
+    <div class="mf"><label>Opis (opciono)</label><input type="text" id="owlOpis" maxlength="120" placeholder="npr. ime/projekat"></div>
+    <div class="owl-calc" id="owlCalc" style="background:var(--panel2); border:1px solid var(--line); border-radius:11px; padding:11px 13px; font-size:.84rem; margin-bottom:14px; display:none">
+      <div style="display:flex; justify-content:space-between"><span>Prinos</span><b id="owlCalcPrinos" class="pos">0 €</b></div>
+      <div style="display:flex; justify-content:space-between"><span>Za vratiti (ulog + prinos)</span><b id="owlCalcVratiti">0 €</b></div>
+      <div style="display:flex; justify-content:space-between; color:var(--dim); font-size:.76rem; margin-top:4px"><span>Neto (Ice Bags) odmah pada za</span><b id="owlCalcNeto">0 €</b></div>
+    </div>
+    <div class="mbtns"><button class="btn" id="cancelOwl">Otkaži</button><button class="btn primary" id="saveOwl">Sačuvaj ulog</button></div>
+  </div>
+</div>
+
 <!-- ===== AUDIT LOG (cijeli ekran) ===== -->
 <div class="audit-screen" id="auditScreen">
   <div class="audit-head">
@@ -675,7 +787,8 @@ var DEF = { url:"", ime:"", prazne:0, p18:0, p36:0, cost:20, pr18:18, pr36:36, t
 function loadCfg(){ try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(LSKEY)||"{}")); }catch(e){ return Object.assign({},DEF); } }
 function saveCfg(c){ localStorage.setItem(LSKEY, JSON.stringify(c)); }
 var cfg = loadCfg();
-var rows = [], notes = [], dugovanja = [], zadaci = [], audit = [], editingRed = null;
+var rows = [], notes = [], dugovanja = [], zadaci = [], audit = [], owl = [], editingRed = null;
+var sekcija = 'icebags';
 var KEYS = ["napravljene","napunjeno18","napunjeno36","prodato18","prodato36"];
 function eurVal(id){ var v=Number(String($(id).value).replace(",",".")); return isNaN(v)?0:Math.round(v*100)/100; }
 
@@ -731,7 +844,9 @@ function renderWindows(){
   var prihod = t.p18*s18 + t.p36*s36;
   var ulogAktivni = 0;
   dugovanja.forEach(function(d){ if(d.vrsta==="ulog") ulogAktivni += (d.iznos||0); });
-  var neto = prihod - ulozeno + t.ekstra + t.korekcija + ulogAktivni;
+  var owlAktivno = 0;
+  owl.forEach(function(o){ if(!o.naplaceno) owlAktivno += (o.iznos||0); });
+  var neto = prihod - ulozeno + t.ekstra + t.korekcija + ulogAktivni - owlAktivno;
 
   var l18 = cfg.p18 + t.n18 - t.p18;
   var l36 = cfg.p36 + t.n36 - t.p36;
@@ -758,6 +873,7 @@ function renderWindows(){
     if(t.ekstra>0) parts.push("+"+eur(t.ekstra)+" ekstra");
     if(ulogAktivni>0) parts.push("+"+eur(ulogAktivni)+" ulog");
     if(t.korekcija!==0) parts.push((t.korekcija>0?"+":"")+eur(t.korekcija)+" korekcija");
+    if(owlAktivno>0) parts.push("−"+eur(owlAktivno)+" u Owl-u");
     $("nNetoNote").textContent = parts.length ? ("uključuje "+parts.join(", ")) : "kasa − ulaganje";
   }
 
@@ -1072,21 +1188,21 @@ $("btnSaveDay").addEventListener("click", function(){
 });
 
 /* ============ osvježavanje ============ */
-function afterData(){ renderWindows(); buildMonthFilter(); renderTable(); renderNotes(); renderDug(); renderZad(); renderAudit(); }
+function afterData(){ renderWindows(); buildMonthFilter(); renderTable(); renderNotes(); renderDug(); renderZad(); renderAudit(); renderOwl(); }
 function refresh(silent){
   var dot=$("dot"), stat=$("stat");
   if(!cfg.url){ $("app").style.display="none"; $("empty").style.display="block"; stat.textContent="nije povezano"; return; }
   $("app").style.display=""; $("empty").style.display="none";
   $("nav-refresh").classList.add("spin"); if(!silent) stat.textContent="učitavam…";
   call({action:"podaci"}).then(function(res){
-    rows=res.redovi||[]; notes=res.beleske||[]; dugovanja=res.dugovanja||[]; zadaci=res.zadaci||[]; audit=res.audit||[];
-    try{ localStorage.setItem(CACHEKEY, JSON.stringify({rows:rows,notes:notes,dugovanja:dugovanja,zadaci:zadaci,audit:audit})); }catch(e){}
+    rows=res.redovi||[]; notes=res.beleske||[]; dugovanja=res.dugovanja||[]; zadaci=res.zadaci||[]; audit=res.audit||[]; owl=res.owl||[];
+    try{ localStorage.setItem(CACHEKEY, JSON.stringify({rows:rows,notes:notes,dugovanja:dugovanja,zadaci:zadaci,audit:audit,owl:owl})); }catch(e){}
     dot.className="dot on";
     var now=new Date(); stat.textContent="ažurirano "+String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
     afterData(); if(!silent) toast("Osvježeno ✓");
   }).catch(function(err){
     dot.className="dot err"; stat.textContent="greška veze";
-    try{ var c=JSON.parse(localStorage.getItem(CACHEKEY)||"null"); if(c){ rows=c.rows||[]; notes=c.notes||[]; dugovanja=c.dugovanja||[]; zadaci=c.zadaci||[]; audit=c.audit||[]; afterData(); } }catch(e){}
+    try{ var c=JSON.parse(localStorage.getItem(CACHEKEY)||"null"); if(c){ rows=c.rows||[]; notes=c.notes||[]; dugovanja=c.dugovanja||[]; zadaci=c.zadaci||[]; audit=c.audit||[]; owl=c.owl||[]; afterData(); } }catch(e){}
     if(!silent) toast(err&&err.error==="no_endpoint"?"Postavi /exec adresu u ⚙":"Ne mogu da povučem podatke", true);
   }).finally(function(){ $("nav-refresh").classList.remove("spin"); updateStatusbar(); });
 }
@@ -1103,7 +1219,124 @@ function openCfg(){
   $("modalCfg").classList.add("open");
 }
 function closeCfg(){ $("modalCfg").classList.remove("open"); }
-$("btnUnesi").addEventListener("click", openUnos);
+$("btnUnesi").addEventListener("click", function(){ if(sekcija==="owl") openOwl(); else openUnos(); });
+
+/* ============ SEKCIJE (Ice Bags / Owl) ============ */
+function switchSek(s){
+  sekcija = s;
+  $("sec-icebags").style.display = (s==="icebags") ? "" : "none";
+  $("sec-owl").style.display = (s==="owl") ? "" : "none";
+  $("sekIce").classList.toggle("on", s==="icebags");
+  $("sekOwl").classList.toggle("on", s==="owl");
+  var bu=$("btnUnesi"); if(bu) bu.innerHTML = (s==="owl") ? '<span class="plus">+</span> Owl ulog' : '<span class="plus">+</span> Unesi';
+  if(s==="owl") renderOwl();
+  try{ localStorage.setItem("iceberg_sek", s); }catch(e){}
+}
+$("sekIce").addEventListener("click", function(){ switchSek("icebags"); });
+$("sekOwl").addEventListener("click", function(){ switchSek("owl"); });
+
+/* ============ OWL ============ */
+function owlPrinos(o){ return Math.round((o.iznos||0)*(o.procenat||0))/100; }
+function owlVratiti(o){ return (o.iznos||0) + owlPrinos(o); }
+function renderOwl(){
+  if(!$("owlTbody")) return;
+  var aktivni = owl.filter(function(o){ return !o.naplaceno; });
+  var naplaceni = owl.filter(function(o){ return o.naplaceno; });
+  var aktivnoSum=0, prinosSum=0, vratitiSum=0;
+  aktivni.forEach(function(o){ aktivnoSum+=(o.iznos||0); prinosSum+=owlPrinos(o); vratitiSum+=owlVratiti(o); });
+  var naplSum=0, naplPrinos=0;
+  naplaceni.forEach(function(o){ naplSum+=owlVratiti(o); naplPrinos+=owlPrinos(o); });
+  $("owlAktivno").textContent = eur(aktivnoSum);
+  $("owlAktivnoNote").textContent = aktivni.length+(aktivni.length===1?" aktivan ulog":" aktivnih uloga");
+  $("owlPrinos").textContent = "+"+eur(prinosSum);
+  $("owlVratiti").textContent = "za vratiti ukupno: "+eur(vratitiSum);
+  $("owlNaplaceno").textContent = eur(naplSum);
+  $("owlZaradaNote").textContent = "ostvaren prinos: "+eur(naplPrinos);
+  // uskoro: aktivni sortirani po datumu prihoda
+  var soon=$("owlSoon"); soon.innerHTML="";
+  var sortiraj = aktivni.slice().sort(function(a,b){ return (a.datumPrihoda||"").localeCompare(b.datumPrihoda||""); });
+  if(!sortiraj.length){ soon.innerHTML='<div class="nempty">Nema aktivnih uloga.</div>'; }
+  else {
+    var danas = todayStr();
+    sortiraj.slice(0,8).forEach(function(o){
+      var cls = o.datumPrihoda ? (o.datumPrihoda < danas ? "past" : (o.datumPrihoda===danas?"due":"")) : "";
+      var it=document.createElement("div"); it.className="os-item "+cls;
+      it.innerHTML = '<span>'+(o.datumPrihoda?formatDmy(o.datumPrihoda):"bez datuma")+(o.opis?(' · '+escapeHtml(o.opis)):'')+'</span><span class="os-amt">'+eur(owlVratiti(o))+'</span>';
+      soon.appendChild(it);
+    });
+  }
+  // tabela
+  var f=$("owlFilter")?$("owlFilter").value:"aktivni";
+  var lista = f==="aktivni"?aktivni : (f==="naplaceni"?naplaceni : owl);
+  var tb=$("owlTbody"); tb.innerHTML="";
+  if(!lista.length){ tb.innerHTML='<tr><td colspan="8" style="text-align:center; color:var(--dim); padding:20px">Nema uloga za prikaz.</td></tr>'; return; }
+  lista.forEach(function(o){
+    var tr=document.createElement("tr");
+    var statusHtml = o.naplaceno ? '<span class="owl-status nap">naplaćen</span>' : '<span class="owl-status akt">aktivan</span>';
+    var akcija = o.naplaceno
+      ? '<button class="owl-del-btn" data-id="'+o.id+'" title="Obriši">🗑</button>'
+      : '<button class="owl-naplati-btn" data-id="'+o.id+'">Naplaćeno</button> <button class="owl-del-btn" data-id="'+o.id+'" title="Obriši">🗑</button>';
+    tr.innerHTML =
+      '<td>'+(o.datumUloga?formatDmy(o.datumUloga):"—")+'</td>'+
+      '<td>'+eur(o.iznos)+'</td>'+
+      '<td>'+(o.procenat||0)+'%</td>'+
+      '<td class="pos">+'+eur(owlPrinos(o))+'</td>'+
+      '<td><b>'+eur(owlVratiti(o))+'</b></td>'+
+      '<td>'+(o.datumPrihoda?formatDmy(o.datumPrihoda):"—")+'</td>'+
+      '<td>'+statusHtml+(o.opis?'<br><span style="font-size:.68rem;color:var(--dim)">'+escapeHtml(o.opis)+'</span>':'')+'</td>'+
+      '<td style="white-space:nowrap">'+akcija+'</td>';
+    tb.appendChild(tr);
+  });
+  // wire buttons
+  tb.querySelectorAll(".owl-naplati-btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      b.disabled=true; b.textContent="…";
+      call({action:"owl_naplati", id:b.getAttribute("data-id")}).then(function(res){ owl=res.owl||[]; renderOwl(); renderWindows(); toast("Naplaćeno ✓"); })
+        .catch(function(){ toast("Greška", true); b.disabled=false; b.textContent="Naplaćeno"; });
+    });
+  });
+  tb.querySelectorAll(".owl-del-btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      if(!b.classList.contains("arm")){ b.classList.add("arm"); b.textContent="?"; setTimeout(function(){ b.classList.remove("arm"); b.textContent="🗑"; },3000); return; }
+      b.disabled=true;
+      call({action:"owl_obrisi", id:b.getAttribute("data-id")}).then(function(res){ owl=res.owl||[]; renderOwl(); renderWindows(); toast("Obrisano"); })
+        .catch(function(){ toast("Brisanje nije uspjelo", true); b.disabled=false; });
+    });
+  });
+}
+function formatDmy(s){ var m=String(s||"").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? (m[3]+"."+m[2]+"."+m[1]+".") : s; }
+if($("owlFilter")) $("owlFilter").addEventListener("change", renderOwl);
+
+// Owl modal
+function owlLiveCalc(){
+  var iznos=Math.max(0, parseFloat(String($("owlIznos").value).replace(",","."))||0);
+  var proc=Math.max(0, parseFloat(String($("owlProcenat").value).replace(",","."))||0);
+  var prinos=Math.round(iznos*proc)/100, vratiti=iznos+prinos;
+  $("owlCalc").style.display = (iznos>0) ? "block" : "none";
+  $("owlCalcPrinos").textContent = "+"+eur(prinos);
+  $("owlCalcVratiti").textContent = eur(vratiti);
+  $("owlCalcNeto").textContent = "−"+eur(iznos);
+}
+function openOwl(){
+  if(!cfg.ime){ toast("Otključaj imenom (Ice/Fox) prvo", true); return; }
+  $("owlIznos").value=""; $("owlProcenat").value=""; $("owlDatumU").value=todayStr(); $("owlDatumP").value=""; $("owlOpis").value="";
+  owlLiveCalc(); $("modalOwl").classList.add("open");
+}
+function closeOwl(){ $("modalOwl").classList.remove("open"); }
+$("closeOwl").addEventListener("click", closeOwl);
+$("cancelOwl").addEventListener("click", closeOwl);
+$("modalOwl").addEventListener("click", function(e){ if(e.target===this) closeOwl(); });
+$("owlIznos").addEventListener("input", owlLiveCalc);
+$("owlProcenat").addEventListener("input", owlLiveCalc);
+$("saveOwl").addEventListener("click", function(){
+  var iznos=Math.max(0, parseFloat(String($("owlIznos").value).replace(",","."))||0);
+  var proc=Math.max(0, parseFloat(String($("owlProcenat").value).replace(",","."))||0);
+  if(iznos<=0){ toast("Upiši iznos uloga", true); return; }
+  var btn=$("saveOwl"); btn.disabled=true;
+  call({action:"owl_dodaj", autor:cfg.ime, iznos:iznos, procenat:proc, datumUloga:$("owlDatumU").value, datumPrihoda:$("owlDatumP").value, opis:$("owlOpis").value.trim()})
+    .then(function(res){ owl=res.owl||[]; closeOwl(); renderOwl(); renderWindows(); toast("Ulog sačuvan ✓"); })
+    .catch(function(){ toast("Nije sačuvano", true); }).finally(function(){ btn.disabled=false; });
+});
 $("closeUnos").addEventListener("click", closeUnos);
 $("modalUnos").addEventListener("click", function(e){ if(e.target===this) closeUnos(); });
 $("nav-gear").addEventListener("click", openCfg);
